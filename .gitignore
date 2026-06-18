@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+*.sqlite3
+logs/*.log
+media/avatars/
+media/verification/documents/
+media/licenses/documents/
+.env
+*.pyc

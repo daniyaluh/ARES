@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Military-Grade Robots - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center space-x-3 mb-2">
+                <h1 class="text-4xl font-bold text-red-400">MILITARY-GRADE SYSTEMS</h1>
+                <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded text-sm font-mono flex items-center gap-1">
+                    <span>🔒</span> CLEARANCE REQUIRED
+                </span>
+            </div>
+            <p class="text-slate-400 font-mono">Advanced autonomous systems requiring clearance verification</p>
+        </div>
+
+        <!-- Military Robots Grid -->
+        {% if robots %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for robot in robots %}
+            <div class="glass-effect border border-red-500/30 rounded-lg p-6 hover:border-red-500/50 transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-red-400">{{ robot.product.title|default:robot.product.slug }}</h3>
+                    {% if robot.display_tag != 'none' %}
+                        {% with tag_info=robot.display_tag_info %}
+                        <span class="px-2 py-1 text-xs {{ tag_info.bg_class }} {{ tag_info.text_class }} rounded font-mono flex items-center gap-1">
+                            <span>{{ tag_info.icon }}</span>
+                            {{ tag_info.label }}
+                        </span>
+                        {% endwith %}
+                    {% endif %}
+                </div>
+                <p class="text-slate-400 text-sm mb-4">{{ robot.product.short_description|default:robot.product.description|truncatewords:20 }}</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-red-400 font-bold">${{ robot.product.price }}</span>
+                    <a href="{% url 'verification:robot-detail' robot.id %}" class="px-4 py-2 text-sm bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors">
+                        View Details
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass-effect cyber-border rounded-lg p-12 text-center">
+            <p class="text-slate-400 font-mono text-lg">No military-grade robots available.</p>
+            <p class="text-slate-500 font-mono text-sm mt-2">Clearance required to access this section.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verification Request Details - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-effect cyber-border rounded-lg p-8">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-4xl font-bold text-cyber-lime">VERIFICATION REQUEST</h1>
+                <span class="px-3 py-1 rounded text-sm font-mono
+                    {% if verification_request.status == 'approved' %}bg-cyber-lime/20 text-cyber-lime
+                    {% elif verification_request.status == 'rejected' or verification_request.status == 'withdrawn' %}bg-red-500/20 text-red-400
+                    {% else %}bg-yellow-500/20 text-yellow-400{% endif %}">
+                    {{ verification_request.get_status_display|upper }}
+                </span>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-cyber-lime font-bold mb-2">Requested Clearance</h3>
+                    <p class="text-slate-300">{{ verification_request.requested_clearance.name }}</p>
+                </div>
+
+                {% if verification_request.review_notes %}
+                <div>
+                    <h3 class="text-cyber-lime font-bold mb-2">Review Notes</h3>
+                    <p class="text-slate-300">{{ verification_request.review_notes }}</p>
+                </div>
+                {% endif %}
+
+                {% if verification_request.identity_documents.all %}
+                <div class="mt-6">
+                    <h3 class="text-cyber-lime font-bold mb-4">Uploaded Documents</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for doc in verification_request.identity_documents.all %}
+                        <div class="glass-effect cyber-border rounded-lg p-4">
+                            <h4 class="text-cyber-lime font-bold mb-2">{{ doc.get_document_type_display }}</h4>
+                            {% if doc.front_image %}
+                            <div class="mb-2">
+                                <p class="text-slate-400 text-sm mb-1">Front Image:</p>
+                                <img src="{{ doc.front_image.url }}" alt="ID Front" class="max-w-full h-auto rounded border border-cyber-lime/30">
+                            </div>
+                            {% endif %}
+                            {% if doc.back_image %}
+                            <div>
+                                <p class="text-slate-400 text-sm mb-1">Back Image:</p>
+                                <img src="{{ doc.back_image.url }}" alt="ID Back" class="max-w-full h-auto rounded border border-cyber-lime/30">
+                            </div>
+                            {% endif %}
+                            <p class="text-slate-500 text-xs mt-2">
+                                Status: {% if doc.is_verified %}<span class="text-cyber-lime">Verified</span>{% else %}<span class="text-yellow-400">Pending Review</span>{% endif %}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if verification_request.current_clearance %}
+                <div class="bg-cyber-lime/10 border border-cyber-lime/30 rounded-lg p-4">
+                    <h3 class="text-cyber-lime font-bold mb-2">Current Clearance</h3>
+                    <p class="text-cyber-lime font-mono">{{ verification_request.current_clearance.name }}</p>
+                </div>
+                {% endif %}
+
+                {% if verification_request.review_notes %}
+                <div>
+                    <h3 class="text-cyber-lime font-bold mb-2">Review Notes</h3>
+                    <p class="text-slate-300">{{ verification_request.review_notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="mt-8 flex items-center space-x-4">
+                <a href="{% url 'verification:request-list' %}" class="cyber-button px-4 py-2 rounded-lg inline-block">
+                    ← Back to Requests
+                </a>
+                
+                {% if verification_request.status == 'pending' or verification_request.status == 'under_review' %}
+                <form method="post" action="{% url 'verification:request-withdraw' verification_request.id %}" class="inline-block">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            onclick="return confirm('Are you sure you want to withdraw this verification request? This action cannot be undone.');"
+                            class="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg hover:bg-red-500/30 transition-colors font-mono text-sm">
+                        WITHDRAW REQUEST
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

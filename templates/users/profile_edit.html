@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-effect cyber-border rounded-lg p-8">
+            <h1 class="text-4xl font-bold text-cyber-lime mb-2 font-mono">EDIT PROFILE</h1>
+            <p class="text-slate-400 text-sm mb-8 font-mono">Update your account information</p>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-500/20 border border-red-500/50 text-red-400{% elif message.tags == 'success' %}bg-cyber-lime/20 border border-cyber-lime/50 text-cyber-lime{% else %}bg-blue-500/20 border border-blue-500/50 text-blue-400{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post" class="space-y-6" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-cyber-lime font-mono text-sm mb-2">First Name</label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}" class="cyber-input w-full">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-cyber-lime font-mono text-sm mb-2">Last Name</label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}" class="cyber-input w-full">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-cyber-lime font-mono text-sm mb-2">Display Name</label>
+                        <input type="text" name="display_name" value="{{ user.display_name }}" class="cyber-input w-full">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-cyber-lime font-mono text-sm mb-2">Email</label>
+                        <input type="email" name="email" value="{{ user.email }}" class="cyber-input w-full" readonly>
+                        <p class="text-slate-500 text-xs mt-1">Email cannot be changed</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-cyber-lime font-mono text-sm mb-2">Phone Number</label>
+                        <input type="tel" name="phone_number" value="{{ user.phone_number }}" class="cyber-input w-full" placeholder="+1234567890">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-cyber-lime font-mono text-sm mb-2">Avatar</label>
+                        {% if user.avatar %}
+                            <div class="mb-2">
+                                <img src="{{ user.avatar.url }}" alt="Current avatar" class="w-20 h-20 rounded-full object-cover border-2 border-cyber-lime/50">
+                                <p class="text-slate-500 text-xs mt-1">Current avatar. Upload a new image to replace it.</p>
+                            </div>
+                        {% else %}
+                            <div class="mb-2 w-20 h-20 rounded-full bg-slate-700 border-2 border-slate-600 flex items-center justify-center">
+                                <span class="text-2xl font-bold text-slate-400">{{ user.username|first|upper }}</span>
+                            </div>
+                            <p class="text-slate-500 text-xs mb-2">No avatar uploaded. Upload an image to set your profile picture.</p>
+                        {% endif %}
+                        <input type="file" name="avatar" accept="image/*" class="cyber-input w-full">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-cyber-lime font-mono text-sm mb-2">Bio</label>
+                    <textarea name="bio" rows="4" class="cyber-input w-full" maxlength="500">{{ user.bio }}</textarea>
+                    <p class="text-slate-500 text-xs mt-1">Maximum 500 characters</p>
+                </div>
+                
+                <div class="flex justify-end space-x-4">
+                    <a href="{% url 'users:profile' %}" class="cyber-button px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600">
+                        CANCEL
+                    </a>
+                    <button type="submit" class="cyber-button px-6 py-3 rounded-lg">
+                        SAVE CHANGES
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

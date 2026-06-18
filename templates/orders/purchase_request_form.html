@@ -1,0 +1,227 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Purchase Request - {{ product.title }} - ARES{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-10">
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold text-white">Purchase Request</h1>
+            <p class="text-linear-text-tertiary text-sm">Complete the form below to request purchase</p>
+        </div>
+        <a href="{% url 'verification:robot-detail' product.robot.id %}" class="text-linear-purple hover:text-white text-sm">← Back to Product</a>
+    </div>
+
+    <!-- Product Summary -->
+    <div class="card p-6 mb-8">
+        <div class="flex gap-6">
+            {% if product.robot and product.robot.product.gallery.first %}
+            <img src="{{ product.robot.product.gallery.first.image.url }}" alt="{{ product.title }}" class="w-32 h-32 object-cover rounded-xl border border-linear-border">
+            {% else %}
+            <div class="w-32 h-32 bg-linear-surface-2 rounded-xl border border-linear-border flex items-center justify-center">
+                <span class="text-linear-text-tertiary text-xs">No Image</span>
+            </div>
+            {% endif %}
+            <div class="flex-1">
+                <h3 class="text-lg font-semibold text-white">{{ product.title }}</h3>
+                <p class="text-linear-text-tertiary text-sm mt-1">{{ product.description|truncatewords:30 }}</p>
+                <div class="mt-4 flex items-center gap-6">
+                    <div>
+                        <span class="text-linear-text-tertiary text-xs">Price</span>
+                        <p class="text-linear-purple font-bold text-lg">${{ product.price }}</p>
+                    </div>
+                    {% if product.robot %}
+                    <div>
+                        <span class="text-linear-text-tertiary text-xs">Type</span>
+                        <p class="text-white text-sm">{{ product.robot.get_robot_type_display }}</p>
+                    </div>
+                    <div>
+                        <span class="text-linear-text-tertiary text-xs">Manufacturer</span>
+                        <p class="text-white text-sm">{{ product.robot.manufacturer }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Request Form -->
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+
+        <!-- Quantity -->
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-linear-purple mb-4">Order Quantity</h2>
+            <div class="max-w-xs">
+                <label for="id_quantity" class="block text-linear-text-tertiary text-sm mb-2">Quantity *</label>
+                {{ form.quantity }}
+                {% if form.quantity.errors %}
+                <p class="text-linear-red text-sm mt-1">{{ form.quantity.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-linear-purple mb-4">Contact Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="id_company_name" class="block text-linear-text-tertiary text-sm mb-2">Company/Organization</label>
+                    {{ form.company_name }}
+                    {% if form.company_name.errors %}
+                    <p class="text-linear-red text-sm mt-1">{{ form.company_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_contact_name" class="block text-linear-text-tertiary text-sm mb-2">Contact Name *</label>
+                    {{ form.contact_name }}
+                    {% if form.contact_name.errors %}
+                    <p class="text-linear-red text-sm mt-1">{{ form.contact_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_contact_phone" class="block text-linear-text-tertiary text-sm mb-2">Phone Number *</label>
+                    {{ form.contact_phone }}
+                    {% if form.contact_phone.errors %}
+                    <p class="text-linear-red text-sm mt-1">{{ form.contact_phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_contact_email" class="block text-linear-text-tertiary text-sm mb-2">Email</label>
+                    {{ form.contact_email }}
+                    {% if form.contact_email.errors %}
+                    <p class="text-linear-red text-sm mt-1">{{ form.contact_email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipping Information -->
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-linear-purple mb-4">Shipping Information</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="id_shipping_address" class="block text-linear-text-tertiary text-sm mb-2">Shipping Address *</label>
+                    {{ form.shipping_address }}
+                    {% if form.shipping_address.errors %}
+                    <p class="text-linear-red text-sm mt-1">{{ form.shipping_address.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label for="id_shipping_city" class="block text-linear-text-tertiary text-sm mb-2">City *</label>
+                        {{ form.shipping_city }}
+                        {% if form.shipping_city.errors %}
+                        <p class="text-linear-red text-sm mt-1">{{ form.shipping_city.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="id_shipping_state" class="block text-linear-text-tertiary text-sm mb-2">State/Province</label>
+                        {{ form.shipping_state }}
+                        {% if form.shipping_state.errors %}
+                        <p class="text-linear-red text-sm mt-1">{{ form.shipping_state.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="id_shipping_postal_code" class="block text-linear-text-tertiary text-sm mb-2">Postal Code</label>
+                        {{ form.shipping_postal_code }}
+                        {% if form.shipping_postal_code.errors %}
+                        <p class="text-linear-red text-sm mt-1">{{ form.shipping_postal_code.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="id_shipping_country" class="block text-linear-text-tertiary text-sm mb-2">Country *</label>
+                        {{ form.shipping_country }}
+                        {% if form.shipping_country.errors %}
+                        <p class="text-linear-red text-sm mt-1">{{ form.shipping_country.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Purpose & Intended Use -->
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-linear-purple mb-4">Purpose & Intended Use</h2>
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="id_purpose" class="block text-linear-text-tertiary text-sm mb-2">Purpose *</label>
+                        {{ form.purpose }}
+                        {% if form.purpose.errors %}
+                        <p class="text-linear-red text-sm mt-1">{{ form.purpose.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="id_urgency" class="block text-linear-text-tertiary text-sm mb-2">Urgency Level</label>
+                        {{ form.urgency }}
+                        {% if form.urgency.errors %}
+                        <p class="text-linear-red text-sm mt-1">{{ form.urgency.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <label for="id_intended_use" class="block text-linear-text-tertiary text-sm mb-2">Detailed Intended Use *</label>
+                    {{ form.intended_use }}
+                    <p class="text-linear-text-tertiary text-xs mt-1">Please describe in detail how you plan to use this robot.</p>
+                    {% if form.intended_use.errors %}
+                    <p class="text-linear-red text-sm mt-1">{{ form.intended_use.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-linear-purple mb-4">Additional Information</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="id_notes" class="block text-linear-text-tertiary text-sm mb-2">Additional Notes</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                    <p class="text-linear-red text-sm mt-1">{{ form.notes.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_supporting_documents" class="block text-linear-text-tertiary text-sm mb-2">Supporting Documents (Optional)</label>
+                    {{ form.supporting_documents }}
+                    <p class="text-linear-text-tertiary text-xs mt-1">Upload any relevant documentation (PDF, DOC, images)</p>
+                    {% if form.supporting_documents.errors %}
+                    <p class="text-linear-red text-sm mt-1">{{ form.supporting_documents.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Errors -->
+        {% if form.non_field_errors %}
+        <div class="bg-linear-red/20 border border-linear-red rounded-xl p-4">
+            {% for error in form.non_field_errors %}
+            <p class="text-linear-red text-sm">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Terms Notice -->
+        <div class="bg-linear-surface-2 border border-linear-border rounded-xl p-4">
+            <p class="text-linear-text-tertiary text-sm"><span class="text-linear-purple">⚠️</span> By submitting this request, you acknowledge that:</p>
+            <ul class="text-linear-text-tertiary text-sm mt-2 space-y-1 list-disc list-inside ml-4">
+                <li>All information provided is accurate and complete</li>
+                <li>This request is subject to approval by our team</li>
+                <li>You agree to comply with all applicable export regulations</li>
+                <li>Final pricing and availability will be confirmed after review</li>
+            </ul>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex items-center justify-between">
+            <a href="{% url 'verification:robot-detail' product.robot.id %}" class="btn-secondary text-sm">Cancel</a>
+            <button type="submit" class="btn-secondary px-8 py-3 text-lg font-semibold">Submit Purchase Request</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

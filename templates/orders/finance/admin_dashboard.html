@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Finance Dashboard{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">Platform Finance Dashboard</h1>
+            <p class="mt-2 text-lg text-gray-600">Complete overview of company revenue and earnings</p>
+        </div>
+
+        <!-- Hero Stats - Total Company Revenue -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Total Gross Sales (All Company Revenue) -->
+            <div class="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-cyan-100 text-sm font-medium uppercase tracking-wider">Total Gross Sales</p>
+                        <p class="text-4xl font-bold mt-2">${{ total_gross_sales|floatformat:2|default:"0.00" }}</p>
+                        <p class="text-cyan-100 text-xs mt-1">All company revenue from sales</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-cyan-400">
+                    <p class="text-cyan-100 text-sm">Last 30 Days: <span class="font-semibold">${{ gross_sales_last_30_days|floatformat:2|default:"0.00" }}</span></p>
+                </div>
+            </div>
+
+            <!-- Platform Commission (15% - Company's Earnings) -->
+            <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-emerald-100 text-sm font-medium uppercase tracking-wider">Platform Commission (15%)</p>
+                        <p class="text-4xl font-bold mt-2">${{ total_revenue|floatformat:2|default:"0.00" }}</p>
+                        <p class="text-emerald-100 text-xs mt-1">Company's earned commission</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-emerald-400">
+                    <p class="text-emerald-100 text-sm">Last 30 Days: <span class="font-semibold">${{ revenue_last_30_days|floatformat:2|default:"0.00" }}</span></p>
+                </div>
+            </div>
+
+            <!-- Paid to Sellers (85%) -->
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-purple-100 text-sm font-medium uppercase tracking-wider">Paid to Sellers (85%)</p>
+                        <p class="text-4xl font-bold mt-2">${{ total_seller_earnings|floatformat:2|default:"0.00" }}</p>
+                        <p class="text-purple-100 text-xs mt-1">Total seller payouts</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-purple-400">
+                    <p class="text-purple-100 text-sm">Total Sales: <span class="font-semibold">{{ total_sales_count }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Recent Revenues -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Recent Revenue Entries</h2>
+                    <span class="text-sm text-gray-500">Last 10 transactions</span>
+                </div>
+                
+                {% if recent_revenues %}
+                <div class="space-y-3">
+                    {% for revenue in recent_revenues %}
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">
+                                {% if revenue.order %}
+                                    Order #{{ revenue.order.order_number|truncatechars:12 }}
+                                {% else %}
+                                    Revenue Entry
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">{{ revenue.revenue_date|date:"M d, Y - H:i" }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-cyan-600">${{ revenue.gross_amount|floatformat:2 }}</p>
+                            <p class="text-xs text-gray-500">Commission: ${{ revenue.commission_amount|floatformat:2 }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="mt-2 text-sm text-gray-500">No revenue entries yet</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Top Sellers -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Top Performing Sellers</h2>
+                    <span class="text-sm text-gray-500">By total sales</span>
+                </div>
+                
+                {% if top_sellers %}
+                <div class="space-y-3">
+                    {% for seller in top_sellers %}
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center flex-1">
+                            <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full flex items-center justify-center text-white font-bold">
+                                {{ forloop.counter }}
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">{{ seller.seller__username|default:"Unknown" }}</p>
+                                <p class="text-xs text-gray-500">{{ seller.seller__email|default:"N/A" }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-emerald-600">${{ seller.total_sales|floatformat:2|default:"0.00" }}</p>
+                            <p class="text-xs text-gray-500">{{ seller.total_earnings|floatformat:2|default:"0" }} sales</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <p class="mt-2 text-sm text-gray-500">No seller data available</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <a href="{% url 'orders:admin_revenue_list' %}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow group">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-cyan-100 rounded-lg p-3 group-hover:bg-cyan-200 transition-colors">
+                        <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-lg font-semibold text-gray-900">View All Revenues</p>
+                        <p class="text-sm text-gray-500">Complete revenue history</p>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{% url 'orders:admin_seller_earnings_list' %}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow group">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-emerald-100 rounded-lg p-3 group-hover:bg-emerald-200 transition-colors">
+                        <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-lg font-semibold text-gray-900">Seller Earnings</p>
+                        <p class="text-sm text-gray-500">View all seller payouts</p>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{% url 'orders:admin_seller_payout_list' %}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow group">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-purple-100 rounded-lg p-3 group-hover:bg-purple-200 transition-colors">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-lg font-semibold text-gray-900">Payout History</p>
+                        <p class="text-sm text-gray-500">Manage seller payouts</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

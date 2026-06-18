@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Products - Staff Dashboard{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold text-cyber-lime mb-2 font-mono">ALL PRODUCTS</h1>
+                <p class="text-slate-400 font-mono">Manage all products in the system</p>
+            </div>
+            <a href="{% url 'users:staff-dashboard' %}" class="text-slate-400 hover:text-cyber-lime font-mono flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-effect cyber-border rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 font-mono text-sm">ACTIVE</span>
+                    <span class="text-2xl font-bold text-green-400 font-mono">{{ total_active }}</span>
+                </div>
+            </div>
+            <div class="glass-effect cyber-border rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 font-mono text-sm">PENDING</span>
+                    <span class="text-2xl font-bold text-yellow-400 font-mono">{{ total_pending }}</span>
+                </div>
+            </div>
+            <div class="glass-effect cyber-border rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 font-mono text-sm">REJECTED</span>
+                    <span class="text-2xl font-bold text-red-400 font-mono">{{ total_rejected }}</span>
+                </div>
+            </div>
+            <div class="glass-effect cyber-border rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 font-mono text-sm">DRAFT</span>
+                    <span class="text-2xl font-bold text-slate-400 font-mono">{{ total_draft }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="glass-effect cyber-border rounded-lg p-4 mb-6">
+            <form method="get" class="flex flex-col md:flex-row gap-4">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Search by product title..."
+                       class="flex-1 px-4 py-2 bg-slate-800/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyber-lime focus:ring-1 focus:ring-cyber-lime focus:outline-none">
+                <div class="flex gap-2">
+                    <select name="status" class="px-4 py-2 bg-slate-800/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                        <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+                    </select>
+                    <button type="submit" class="cyber-button px-6 py-2 rounded-lg">
+                        Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {% if products %}
+        <div class="glass-effect cyber-border rounded-lg overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-slate-800/50 border-b border-slate-700">
+                    <tr>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">PRODUCT</th>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">SELLER</th>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">PRICE</th>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">STATUS</th>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">CREATED</th>
+                        <th class="text-center px-6 py-4 text-cyber-lime font-mono text-sm">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-700">
+                    {% for product in products %}
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-12 h-12 rounded-lg object-cover border border-slate-600">
+                                {% else %}
+                                <div class="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center border border-slate-600">
+                                    <span class="text-lg">🤖</span>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <p class="text-slate-200 font-semibold">{{ product.title|truncatechars:30 }}</p>
+                                    <p class="text-slate-500 text-xs font-mono">{{ product.id|truncatechars:12 }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-slate-300">{{ product.seller.username }}</p>
+                        </td>
+                        <td class="px-6 py-4 text-cyber-lime font-mono">${{ product.price|floatformat:2 }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs rounded font-mono
+                                {% if product.status == 'active' %}bg-green-500/20 text-green-400
+                                {% elif product.status == 'pending' %}bg-yellow-500/20 text-yellow-400
+                                {% elif product.status == 'rejected' %}bg-red-500/20 text-red-400
+                                {% else %}bg-slate-500/20 text-slate-400{% endif %}">
+                                {{ product.status|upper }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-slate-400 font-mono text-sm">{{ product.created_at|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-center gap-2">
+                                <a href="{% url 'products:product-detail' product.id %}" 
+                                   class="px-3 py-1 bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-all font-mono text-xs">
+                                    VIEW
+                                </a>
+                                <a href="{% url 'users:staff-change-product-status' product.id %}" 
+                                   class="px-3 py-1 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded hover:bg-yellow-500/30 transition-all font-mono text-xs">
+                                    STATUS
+                                </a>
+                                <a href="{% url 'products:product-edit' product.id %}" 
+                                   class="px-3 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded hover:bg-blue-500/30 transition-all font-mono text-xs">
+                                    EDIT
+                                </a>
+                                <a href="{% url 'users:staff-delete-product' product.id %}" 
+                                   class="px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded hover:bg-red-500/30 transition-all font-mono text-xs">
+                                    DELETE
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="glass-effect cyber-border rounded-lg p-12 text-center">
+            <svg class="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+            <h3 class="text-xl font-bold text-slate-400 font-mono mb-2">NO PRODUCTS FOUND</h3>
+            <p class="text-slate-500">No products match the current filter.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

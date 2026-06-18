@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Browse by Category - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-cyber-lime mb-2 font-mono">BROWSE CATEGORIES</h1>
+            <p class="text-slate-400 font-mono">Explore robots by category and subcategory</p>
+        </div>
+
+        <!-- Categories Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for category in main_categories %}
+            <div class="glass-effect cyber-border rounded-lg overflow-hidden hover:border-cyber-lime/50 transition-all duration-300 group {% if category.name == 'Military Grade' %}border-red-500/30{% elif 'Companion' in category.name or '18+' in category.name %}border-pink-500/30{% endif %}" x-data="{ open: true }">
+                <!-- Category Header -->
+                <div class="p-6 {% if category.name == 'Military Grade' %}bg-gradient-to-r from-red-900/20 to-transparent{% elif 'Companion' in category.name or '18+' in category.name %}bg-gradient-to-r from-pink-900/20 to-transparent{% else %}bg-gradient-to-r from-cyber-lime/10 to-transparent{% endif %}">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center {% if category.name == 'Military Grade' %}bg-red-500/20{% elif 'Companion' in category.name or '18+' in category.name %}bg-pink-500/20{% else %}bg-cyber-lime/20{% endif %}">
+                                {% if category.name == 'Military Grade' %}
+                                <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                {% elif 'Companion' in category.name or '18+' in category.name %}
+                                <svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                {% elif 'Vehicle' in category.name %}
+                                <svg class="w-6 h-6 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                {% elif 'Industrial' in category.name %}
+                                <svg class="w-6 h-6 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                </svg>
+                                {% elif 'Service' in category.name or 'Healthcare' in category.name %}
+                                <svg class="w-6 h-6 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                {% elif 'Research' in category.name %}
+                                <svg class="w-6 h-6 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                                {% else %}
+                                <svg class="w-6 h-6 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                                </svg>
+                                {% endif %}
+                            </div>
+                            <h2 class="text-2xl font-bold font-mono {% if category.name == 'Military Grade' %}text-red-400{% elif 'Companion' in category.name or '18+' in category.name %}text-pink-400{% else %}text-cyber-lime{% endif %}">
+                                {{ category.name|upper }}
+                            </h2>
+                        </div>
+                        {% if category.subcategories.all %}
+                        <button @click="open = !open" class="text-slate-400 hover:text-cyber-lime transition-colors">
+                            <svg class="w-5 h-5 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    {% if category.description %}
+                    <p class="text-slate-400 text-sm mb-4">{{ category.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    
+                    <!-- Restriction Badge -->
+                    {% if category.name == 'Military Grade' %}
+                    <span class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-red-500/20 text-red-400 rounded font-mono">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        CLEARANCE REQUIRED
+                    </span>
+                    {% elif 'Companion' in category.name or '18+' in category.name %}
+                    <span class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-pink-500/20 text-pink-400 rounded font-mono">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                        </svg>
+                        AGE VERIFICATION (18+)
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Subcategories -->
+                {% if category.subcategories.all %}
+                <div x-show="open" x-transition class="px-6 pb-4 space-y-2">
+                    {% for subcat in category.subcategories.all %}
+                    {% if subcat.is_active %}
+                    <a href="{% url 'verification:robot-list' %}?category={{ subcat.id }}" 
+                       class="block px-4 py-3 bg-slate-800/50 rounded-lg hover:bg-cyber-lime/10 hover:text-cyber-lime transition-all duration-200 text-sm font-mono border border-slate-700 hover:border-cyber-lime/50 flex items-center justify-between group">
+                        <span class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-slate-500 group-hover:text-cyber-lime transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                            {{ subcat.name }}
+                        </span>
+                        <svg class="w-4 h-4 text-slate-500 group-hover:text-cyber-lime transition-colors opacity-0 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- View All Link -->
+                <div class="px-6 pb-6">
+                    <a href="{% url 'verification:robot-list' %}?category={{ category.id }}" 
+                       class="cyber-button px-4 py-3 rounded-lg text-sm inline-block w-full text-center {% if category.name == 'Military Grade' %}bg-red-500/20 border-red-500 hover:bg-red-500/30{% elif 'Companion' in category.name or '18+' in category.name %}bg-pink-500/20 border-pink-500 hover:bg-pink-500/30{% endif %}">
+                        VIEW ALL {{ category.name|upper }}
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

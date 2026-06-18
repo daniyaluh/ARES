@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}TOTP Setup - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-effect cyber-border rounded-lg p-8">
+            <h1 class="text-4xl font-bold text-cyber-lime font-mono mb-2">TOTP SETUP</h1>
+            <p class="text-slate-400 text-sm mb-8 font-mono">Scan the QR code with your authenticator app</p>
+            
+            <div class="space-y-6">
+                <div class="bg-cyber-lime/10 border border-cyber-lime/30 rounded-lg p-6 text-center">
+                    <h3 class="text-cyber-lime font-bold text-lg font-mono mb-4">SCAN THIS QR CODE</h3>
+                    <div class="flex justify-center mb-4">
+                        <img src="data:image/png;base64,{{ qr_code_data }}" alt="TOTP QR Code" class="w-64 h-64 border-4 border-cyber-lime/50 rounded-lg">
+                    </div>
+                    <p class="text-slate-300 text-sm font-mono mb-2">Or enter this secret key manually:</p>
+                    <div class="bg-slate-800 rounded-lg p-3 border border-slate-700">
+                        <code class="text-cyber-lime font-mono text-sm break-all">{{ secret }}</code>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                    <h4 class="text-blue-400 font-bold text-sm font-mono mb-2">INSTRUCTIONS:</h4>
+                    <ol class="text-blue-300 text-sm space-y-1 list-decimal list-inside font-mono">
+                        <li>Open your authenticator app (Google Authenticator, Authy, Microsoft Authenticator, etc.)</li>
+                        <li>Scan the QR code above or enter the secret key manually</li>
+                        <li>Enter the 6-digit code from your app to verify</li>
+                        <li>Click "Complete Setup" below</li>
+                    </ol>
+                </div>
+                
+                <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                    <p class="text-yellow-300 text-sm font-mono">
+                        <strong>Important:</strong> Save this secret key in a secure location. You'll need it if you lose access to your authenticator app.
+                    </p>
+                </div>
+                
+                <form method="post" class="pt-6 border-t border-slate-700">
+                    {% csrf_token %}
+                    <button type="submit" class="cyber-button px-6 py-3 rounded-lg w-full text-lg font-bold">
+                        COMPLETE SETUP
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+

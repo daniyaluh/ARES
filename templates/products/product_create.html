@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Product - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-cyber-lime">Create New Product</h1>
+                    <p class="text-slate-400 mt-1 font-mono text-sm">List your robot for sale</p>
+                </div>
+                <a href="{% url 'products:product-list' %}" class="text-cyber-lime hover:underline font-mono text-sm">
+                    ← Back to Products
+                </a>
+            </div>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="glass-effect border border-blue-500/30 rounded-lg p-4 mb-6">
+            <div class="flex items-start gap-3">
+                <span class="text-2xl">ℹ️</span>
+                <div>
+                    <p class="text-blue-400 font-bold">Review Process</p>
+                    <p class="text-slate-400 text-sm">All products are reviewed by staff before they become visible to buyers. You can save as draft and submit for review later.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Form -->
+        <form method="post" enctype="multipart/form-data" class="glass-effect cyber-border rounded-lg p-6">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <!-- Title -->
+                <div>
+                    <label for="title" class="block text-cyber-lime font-mono text-sm mb-2">PRODUCT TITLE *</label>
+                    <input type="text" name="title" id="title" 
+                           class="w-full bg-slate-800/50 text-slate-200 px-4 py-3 rounded-lg border border-slate-600 focus:border-cyber-lime focus:outline-none font-mono"
+                           placeholder="e.g., Atlas Pro Industrial Robot"
+                           required>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="description" class="block text-cyber-lime font-mono text-sm mb-2">DESCRIPTION *</label>
+                    <textarea name="description" id="description" rows="6"
+                              class="w-full bg-slate-800/50 text-slate-200 px-4 py-3 rounded-lg border border-slate-600 focus:border-cyber-lime focus:outline-none font-mono resize-none"
+                              placeholder="Describe your product in detail..."
+                              required></textarea>
+                </div>
+
+                <!-- Price -->
+                <div>
+                    <label for="price" class="block text-cyber-lime font-mono text-sm mb-2">PRICE (USD) *</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400">$</span>
+                        <input type="number" name="price" id="price" step="0.01" min="0"
+                               class="w-full bg-slate-800/50 text-slate-200 pl-8 pr-4 py-3 rounded-lg border border-slate-600 focus:border-cyber-lime focus:outline-none font-mono"
+                               placeholder="0.00"
+                               required>
+                    </div>
+                </div>
+
+                <!-- Category -->
+                {% if categories %}
+                <div>
+                    <label for="category" class="block text-cyber-lime font-mono text-sm mb-2">CATEGORY</label>
+                    <select name="category" id="category"
+                            class="w-full bg-slate-800/50 text-slate-200 px-4 py-3 rounded-lg border border-slate-600 focus:border-cyber-lime focus:outline-none font-mono">
+                        <option value="">Select a category...</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-8 pt-6 border-t border-slate-700">
+                <p class="text-slate-400 text-sm mb-4 font-mono">Choose how to save your product:</p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button type="submit" name="submit_for_review" value="0" 
+                            class="flex-1 px-6 py-3 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 font-mono text-center">
+                        📝 Save as Draft
+                    </button>
+                    <button type="submit" name="submit_for_review" value="1" 
+                            class="flex-1 cyber-button px-6 py-3 rounded-lg">
+                        🚀 Submit for Review
+                    </button>
+                </div>
+                <p class="text-slate-500 text-xs mt-3 font-mono">
+                    Draft products are private. Submitted products will be reviewed by staff before going live.
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review Purchase Request - Staff - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-cyber-lime">REVIEW PURCHASE REQUEST</h1>
+                    <p class="text-slate-400 mt-1 font-mono text-sm">Request ID: {{ purchase_request.id }}</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="px-3 py-1 rounded text-sm font-mono
+                        {% if purchase_request.status == 'approved' %}bg-green-500/20 text-green-400
+                        {% elif purchase_request.status == 'rejected' %}bg-red-500/20 text-red-400
+                        {% elif purchase_request.status == 'under_review' %}bg-yellow-500/20 text-yellow-400
+                        {% else %}bg-cyber-lime/20 text-cyber-lime{% endif %}">
+                        {{ purchase_request.get_status_display|upper }}
+                    </span>
+                    <a href="{% url 'orders:staff-pending-requests' %}" class="text-cyber-lime hover:underline font-mono text-sm">
+                        ← Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Customer Information -->
+                <div class="glass-effect cyber-border rounded-lg p-6">
+                    <h2 class="text-xl font-bold text-cyber-lime mb-4">CUSTOMER INFORMATION</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">USERNAME</p>
+                            <p class="text-slate-200">{{ purchase_request.user.username }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">EMAIL</p>
+                            <p class="text-slate-200">{{ purchase_request.user.email }}</p>
+                        </div>
+                        {% if purchase_request.company_name %}
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">COMPANY</p>
+                            <p class="text-slate-200">{{ purchase_request.company_name }}</p>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">CONTACT NAME</p>
+                            <p class="text-slate-200">{{ purchase_request.contact_name|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">PHONE</p>
+                            <p class="text-slate-200">{{ purchase_request.contact_phone|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">CONTACT EMAIL</p>
+                            <p class="text-slate-200">{{ purchase_request.contact_email|default:purchase_request.user.email }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Information -->
+                <div class="glass-effect cyber-border rounded-lg p-6">
+                    <h2 class="text-xl font-bold text-cyber-lime mb-4">PRODUCT DETAILS</h2>
+                    {% if purchase_request.product %}
+                    <div class="flex gap-6">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-slate-200">{{ purchase_request.product.title }}</h3>
+                            <p class="text-slate-400 text-sm mt-1">{{ purchase_request.product.description|truncatewords:30 }}</p>
+                            <div class="grid grid-cols-3 gap-4 mt-4">
+                                <div>
+                                    <p class="text-slate-400 text-xs font-mono">QUANTITY</p>
+                                    <p class="text-cyber-lime font-bold text-xl">{{ purchase_request.quantity }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-xs font-mono">UNIT PRICE</p>
+                                    <p class="text-cyber-lime font-bold">${{ purchase_request.product.price }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-xs font-mono">TOTAL</p>
+                                    <p class="text-cyber-lime font-bold">${{ purchase_request.product.price|floatformat:2 }}</p>
+                                </div>
+                            </div>
+                            {% if purchase_request.product.robot %}
+                            <div class="mt-4 pt-4 border-t border-slate-700">
+                                <p class="text-slate-400 text-xs font-mono mb-2">ROBOT DETAILS</p>
+                                <div class="grid grid-cols-2 gap-2 text-sm">
+                                    <div>
+                                        <span class="text-slate-400">Type:</span>
+                                        <span class="text-slate-200 ml-1">{{ purchase_request.product.robot.get_robot_type_display }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400">Manufacturer:</span>
+                                        <span class="text-slate-200 ml-1">{{ purchase_request.product.robot.manufacturer }}</span>
+                                    </div>
+                                    {% if purchase_request.product.robot.classification %}
+                                    <div>
+                                        <span class="text-slate-400">Classification:</span>
+                                        <span class="text-slate-200 ml-1">{{ purchase_request.product.robot.get_classification_display }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-slate-400">Product information not available.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Shipping Information -->
+                <div class="glass-effect cyber-border rounded-lg p-6">
+                    <h2 class="text-xl font-bold text-cyber-lime mb-4">SHIPPING INFORMATION</h2>
+                    <div class="space-y-2">
+                        {% if purchase_request.shipping_address %}
+                        <p class="text-slate-200">{{ purchase_request.shipping_address }}</p>
+                        {% endif %}
+                        <p class="text-slate-200">
+                            {{ purchase_request.shipping_city }}{% if purchase_request.shipping_state %}, {{ purchase_request.shipping_state }}{% endif %}
+                            {% if purchase_request.shipping_postal_code %} {{ purchase_request.shipping_postal_code }}{% endif %}
+                        </p>
+                        <p class="text-slate-200">{{ purchase_request.shipping_country }}</p>
+                    </div>
+                </div>
+
+                <!-- Purpose & Intended Use -->
+                <div class="glass-effect cyber-border rounded-lg p-6">
+                    <h2 class="text-xl font-bold text-cyber-lime mb-4">PURPOSE & INTENDED USE</h2>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">PURPOSE</p>
+                            <p class="text-slate-200">{{ purchase_request.get_purpose_display }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">URGENCY</p>
+                            <span class="px-2 py-1 text-xs rounded font-mono
+                                {% if purchase_request.urgency == 'urgent' %}bg-red-500/20 text-red-400
+                                {% elif purchase_request.urgency == 'high' %}bg-orange-500/20 text-orange-400
+                                {% elif purchase_request.urgency == 'normal' %}bg-blue-500/20 text-blue-400
+                                {% else %}bg-slate-500/20 text-slate-400{% endif %}">
+                                {{ purchase_request.get_urgency_display }}
+                            </span>
+                        </div>
+                    </div>
+                    {% if purchase_request.intended_use %}
+                    <div>
+                        <p class="text-slate-400 text-xs font-mono mb-1">INTENDED USE DESCRIPTION</p>
+                        <p class="text-slate-200 bg-slate-800/50 rounded-lg p-4">{{ purchase_request.intended_use }}</p>
+                    </div>
+                    {% endif %}
+                    {% if purchase_request.notes %}
+                    <div class="mt-4">
+                        <p class="text-slate-400 text-xs font-mono mb-1">ADDITIONAL NOTES</p>
+                        <p class="text-slate-200 bg-slate-800/50 rounded-lg p-4">{{ purchase_request.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Supporting Documents -->
+                {% if purchase_request.supporting_documents %}
+                <div class="glass-effect cyber-border rounded-lg p-6">
+                    <h2 class="text-xl font-bold text-cyber-lime mb-4">SUPPORTING DOCUMENTS</h2>
+                    <a href="{{ purchase_request.supporting_documents.url }}" 
+                       target="_blank"
+                       class="inline-flex items-center gap-2 text-cyber-lime hover:underline">
+                        📄 {{ purchase_request.supporting_documents.name|truncatechars:50 }}
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Activity Log -->
+                <div class="glass-effect cyber-border rounded-lg p-6">
+                    <h2 class="text-xl font-bold text-cyber-lime mb-4">ACTIVITY LOG</h2>
+                    {% if logs %}
+                    <div class="space-y-3">
+                        {% for log in logs %}
+                        <div class="flex items-start gap-3 border-l-2 border-slate-700 pl-4">
+                            <div class="flex-1">
+                                <p class="text-slate-200 font-mono text-sm">{{ log.get_action_display }}</p>
+                                {% if log.details %}
+                                <p class="text-slate-400 text-xs mt-1">{{ log.details }}</p>
+                                {% endif %}
+                                <p class="text-slate-500 text-xs mt-1">
+                                    {{ log.created_at|date:"M d, Y H:i" }}
+                                    {% if log.performed_by %} by {{ log.performed_by.username }}{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-slate-400 text-sm">No activity logged yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sidebar - Review Actions -->
+            <div class="space-y-6">
+                <!-- Quick Stats -->
+                <div class="glass-effect cyber-border rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-cyber-lime mb-4">REQUEST DETAILS</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">SUBMITTED</p>
+                            <p class="text-slate-200 font-mono text-sm">{{ purchase_request.created_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">LAST UPDATED</p>
+                            <p class="text-slate-200 font-mono text-sm">{{ purchase_request.updated_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        {% if purchase_request.reviewed_by %}
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">REVIEWED BY</p>
+                            <p class="text-slate-200">{{ purchase_request.reviewed_by.username }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs font-mono">REVIEWED AT</p>
+                            <p class="text-slate-200 font-mono text-sm">{{ purchase_request.reviewed_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if purchase_request.reviewed_by and purchase_request.review_notes %}
+                <div class="glass-effect cyber-border rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-cyber-lime mb-4">REVIEW NOTES</h3>
+                    <p class="text-slate-200 text-sm">{{ purchase_request.review_notes }}</p>
+                </div>
+                {% endif %}
+
+                {% if purchase_request.rejection_reason %}
+                <div class="bg-red-500/10 border border-red-500/50 rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-red-400 mb-4">REJECTION REASON</h3>
+                    <p class="text-slate-200 text-sm">{{ purchase_request.rejection_reason }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Review Form -->
+                {% if purchase_request.status == 'pending' or purchase_request.status == 'under_review' %}
+                <div class="glass-effect cyber-border rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-cyber-lime mb-4">REVIEW ACTION</h3>
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="block text-slate-300 font-mono text-sm mb-2">Action</label>
+                            {{ form.action }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-slate-300 font-mono text-sm mb-2">Review Notes</label>
+                            {{ form.review_notes }}
+                        </div>
+                        
+                        <div class="mb-4" id="rejection-reason-field">
+                            <label class="block text-slate-300 font-mono text-sm mb-2">Rejection Reason <span class="text-red-400">*</span></label>
+                            {{ form.rejection_reason }}
+                            <p class="text-slate-500 text-xs mt-1">Required if rejecting the request</p>
+                        </div>
+
+                        {% if form.non_field_errors %}
+                        <div class="mb-4 bg-red-500/20 border border-red-500/50 rounded-lg p-3">
+                            {% for error in form.non_field_errors %}
+                            <p class="text-red-400 text-sm">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <button type="submit" class="cyber-button w-full py-3 rounded-lg font-bold">
+                            SUBMIT REVIEW
+                        </button>
+                    </form>
+                </div>
+
+                <script>
+                    // Show/hide rejection reason field based on action selection
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const actionSelect = document.getElementById('id_action');
+                        const rejectionField = document.getElementById('rejection-reason-field');
+                        
+                        function toggleRejectionField() {
+                            if (actionSelect.value === 'reject') {
+                                rejectionField.style.display = 'block';
+                            } else {
+                                rejectionField.style.display = 'none';
+                            }
+                        }
+                        
+                        actionSelect.addEventListener('change', toggleRejectionField);
+                        toggleRejectionField();
+                    });
+                </script>
+                {% else %}
+                <div class="glass-effect cyber-border rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-cyber-lime mb-4">REVIEW STATUS</h3>
+                    <p class="text-slate-300">
+                        This request has been 
+                        <span class="{% if purchase_request.status == 'approved' %}text-green-400{% else %}text-red-400{% endif %} font-bold">
+                            {{ purchase_request.get_status_display|upper }}
+                        </span>
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

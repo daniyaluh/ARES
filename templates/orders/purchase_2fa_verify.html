@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verify Purchase - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-effect cyber-border rounded-lg p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-cyber-lime mb-2 font-mono">VERIFY PURCHASE</h1>
+                <p class="text-slate-400 text-sm font-mono">Two-Factor Authentication Required</p>
+            </div>
+
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-500/20 text-red-400{% elif message.tags == 'info' %}bg-blue-500/20 text-blue-400{% else %}bg-green-500/20 text-green-400{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <div class="mb-4 p-3 rounded-lg text-sm bg-red-500/20 text-red-400">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <div class="mb-6 bg-slate-800/50 rounded-lg p-4">
+                <p class="text-slate-300 text-sm mb-2"><strong>Product:</strong> {{ product.title }}</p>
+                <p class="text-slate-300 text-sm mb-2"><strong>Quantity:</strong> {{ quantity }}</p>
+                <p class="text-slate-300 text-sm"><strong>Price:</strong> ${{ product.price }}</p>
+            </div>
+
+            <div class="mb-6">
+                <p class="text-slate-300 text-sm mb-2">
+                    Please enter your 2FA verification code to confirm this purchase.
+                </p>
+                
+                {% if method == 'email' and email_code %}
+                <div class="mt-4 p-4 bg-cyber-lime/10 border border-cyber-lime/30 rounded-lg">
+                    <p class="text-cyber-lime font-mono text-sm mb-2 font-bold">📧 DEVELOPMENT MODE - EMAIL VERIFICATION CODE:</p>
+                    <p class="text-3xl font-mono font-bold text-cyber-lime text-center tracking-widest py-2">{{ email_code }}</p>
+                    <p class="text-slate-400 text-xs mt-2 text-center">⚠️ In production, this code will be sent to {{ request.user.email }}</p>
+                    <p class="text-slate-500 text-xs mt-1 text-center font-mono">Code expires in 5 minutes</p>
+                </div>
+                {% elif method == 'email' %}
+                <div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <p class="text-blue-400 font-mono text-sm mb-2">📧 Check your email inbox</p>
+                    <p class="text-slate-400 text-xs mt-2 text-center">A verification code has been sent to your email address</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <input type="hidden" name="quantity" value="{{ quantity }}">
+                
+                <div>
+                    <label class="block text-cyber-lime font-mono text-sm mb-2">Verification Code</label>
+                    <input type="text" name="2fa_code" required 
+                           maxlength="10" 
+                           pattern="[0-9A-Z-]+"
+                           placeholder="Enter verification code"
+                           class="w-full bg-slate-850 border border-cyber-lime/30 text-slate-300 rounded-lg px-4 py-2 focus:border-cyber-lime focus:outline-none text-center text-2xl font-mono tracking-widest"
+                           autocomplete="one-time-code"
+                           autofocus>
+                    <p class="text-slate-500 text-xs mt-1 text-center">
+                        Enter the code from your authenticator app, SMS, email, or backup code
+                    </p>
+                </div>
+
+                <button type="submit" class="cyber-button px-6 py-3 rounded-lg text-lg font-bold w-full">
+                    VERIFY & COMPLETE PURCHASE
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <a href="{% url 'verification:robot-detail' product.robot.id %}" class="text-slate-400 hover:text-cyber-lime text-sm">
+                    ← Cancel and Go Back
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,237 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Purchases - ARES{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-10">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-semibold text-white mb-2">My Purchases</h1>
+        <p class="text-linear-text-tertiary text-sm">Track your purchase requests and order history</p>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="card p-4 text-center">
+            <span class="text-xl font-semibold text-white">{{ total_requests|default:0 }}</span>
+            <p class="text-xs text-linear-text-tertiary mt-1">Total requests</p>
+        </div>
+        <div class="card p-4 text-center">
+            <span class="text-xl font-semibold text-linear-yellow">{{ pending_count|default:0 }}</span>
+            <p class="text-xs text-linear-text-tertiary mt-1">Pending</p>
+        </div>
+        <div class="card p-4 text-center">
+            <span class="text-xl font-semibold text-linear-green">{{ approved_count|default:0 }}</span>
+            <p class="text-xs text-linear-text-tertiary mt-1">Approved</p>
+        </div>
+        <div class="card p-4 text-center">
+            <span class="text-xl font-semibold text-linear-red">{{ rejected_count|default:0 }}</span>
+            <p class="text-xs text-linear-text-tertiary mt-1">Rejected</p>
+        </div>
+    </div>
+
+    <!-- Status Filter Tabs -->
+    <div class="mb-6 flex flex-wrap gap-2">
+        <a href="?status=" class="px-4 py-2 rounded-lg text-sm transition-all {% if not current_status %}bg-linear-purple text-white{% else %}bg-linear-surface-2 text-linear-text-tertiary hover:bg-linear-surface{% endif %}">All</a>
+        <a href="?status=pending" class="px-4 py-2 rounded-lg text-sm transition-all {% if current_status == 'pending' %}bg-linear-yellow text-white{% else %}bg-linear-surface-2 text-linear-text-tertiary hover:bg-linear-surface{% endif %}">Pending</a>
+        <a href="?status=under_review" class="px-4 py-2 rounded-lg text-sm transition-all {% if current_status == 'under_review' %}bg-linear-blue text-white{% else %}bg-linear-surface-2 text-linear-text-tertiary hover:bg-linear-surface{% endif %}">Under Review</a>
+        <a href="?status=approved" class="px-4 py-2 rounded-lg text-sm transition-all {% if current_status == 'approved' %}bg-linear-green text-white{% else %}bg-linear-surface-2 text-linear-text-tertiary hover:bg-linear-surface{% endif %}">Approved</a>
+        <a href="?status=rejected" class="px-4 py-2 rounded-lg text-sm transition-all {% if current_status == 'rejected' %}bg-linear-red text-white{% else %}bg-linear-surface-2 text-linear-text-tertiary hover:bg-linear-surface{% endif %}">Rejected</a>
+    </div>
+
+    {% if requests %}
+    <div class="space-y-4">
+        {% for req in requests %}
+        <div class="card rounded-xl overflow-hidden hover:border-linear-border-light transition-all">
+            <div class="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- Product Info -->
+                <div class="flex items-start gap-4 flex-1">
+                    {% if req.product.image %}
+                    <img src="{{ req.product.image.url }}" alt="{{ req.product.title }}" class="w-16 h-16 object-cover rounded-lg border border-linear-border">
+                    {% else %}
+                    <div class="w-16 h-16 bg-linear-surface-2 rounded-lg border border-linear-border flex items-center justify-center">
+                        <svg class="w-7 h-7 text-linear-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    {% endif %}
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-white mb-1">{% if req.product %}{{ req.product.title }}{% else %}Purchase Request{% endif %}</h3>
+                        <p class="text-linear-text-tertiary text-sm">Quantity: {{ req.quantity }} {% if req.product.price %}× ${{ req.product.price|floatformat:2 }}{% endif %}</p>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="text-xs text-linear-text-tertiary">Request ID: {{ req.id|truncatechars:13 }}</span>
+                            {% if req.urgency %}
+                            <span class="px-2 py-0.5 rounded text-xs font-medium
+                                {% if req.urgency == 'urgent' %}bg-linear-red/20 text-linear-red
+                                {% elif req.urgency == 'high' %}bg-linear-yellow/20 text-linear-yellow
+                                {% else %}bg-linear-surface-2 text-linear-text-tertiary{% endif %}">
+                                {{ req.get_urgency_display|upper }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status & Actions -->
+                <div class="flex flex-col items-end gap-3">
+                    <!-- Status Badge -->
+                    <span class="px-4 py-2 rounded-lg text-sm font-semibold border
+                        {% if req.status == 'approved' %}bg-linear-green/20 text-linear-green border-linear-green
+                        {% elif req.status == 'rejected' %}bg-linear-red/20 text-linear-red border-linear-red
+                        {% elif req.status == 'cancelled' %}bg-linear-border-light text-linear-text-tertiary border-linear-border-light
+                        {% elif req.status == 'under_review' %}bg-linear-blue/20 text-linear-blue border-linear-blue
+                        {% else %}bg-linear-yellow/20 text-linear-yellow border-linear-yellow{% endif %}">
+                        {{ req.get_status_display|upper|default:"PENDING" }}
+                    </span>
+                    <span class="text-xs text-linear-text-tertiary">{{ req.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+            </div>
+
+            <!-- Progress Tracker -->
+            <div class="px-6 pb-6">
+                <div class="flex items-center justify-between">
+                    <!-- Step 1: Submitted -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="w-7 h-7 rounded-full flex items-center justify-center bg-linear-green">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xs text-linear-text-tertiary mt-1">Submitted</span>
+                    </div>
+                    <div class="flex-1 h-0.5 {% if req.status != 'pending' %}bg-linear-green{% else %}bg-linear-border{% endif %}"></div>
+                    <!-- Step 2: Under Review -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="w-7 h-7 rounded-full flex items-center justify-center
+                            {% if req.status == 'under_review' or req.status == 'approved' or req.status == 'rejected' %}bg-linear-green text-white{% else %}bg-linear-border text-linear-text-tertiary{% endif %}">
+                            {% if req.status == 'under_review' %}
+                            <svg class="w-4 h-4 animate-spin text-linear-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            {% elif req.status == 'approved' or req.status == 'rejected' %}
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            {% else %}
+                            <span class="text-xs font-bold">2</span>
+                            {% endif %}
+                        </div>
+                        <span class="text-xs text-linear-text-tertiary mt-1">Review</span>
+                    </div>
+                    <div class="flex-1 h-0.5 {% if req.status == 'approved' or req.status == 'rejected' %}{% if req.status == 'approved' %}bg-linear-green{% else %}bg-linear-red{% endif %}{% else %}bg-linear-border{% endif %}"></div>
+                    <!-- Step 3: Decision -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="w-7 h-7 rounded-full flex items-center justify-center
+                            {% if req.status == 'approved' %}bg-linear-green text-white
+                            {% elif req.status == 'rejected' %}bg-linear-red text-white
+                            {% else %}bg-linear-border text-linear-text-tertiary{% endif %}">
+                            {% if req.status == 'approved' %}
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            {% elif req.status == 'rejected' %}
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            {% else %}
+                            <span class="text-xs font-bold">3</span>
+                            {% endif %}
+                        </div>
+                        <span class="text-xs text-linear-text-tertiary mt-1">{% if req.status == 'approved' %}Approved{% elif req.status == 'rejected' %}Rejected{% else %}Decision{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Info (only shown when approved or rejected) -->
+            {% if req.status == 'approved' or req.status == 'rejected' %}
+            <div class="mt-4 p-3 bg-linear-surface-2 rounded-lg">
+                <div class="flex items-center gap-2 text-sm">
+                    <svg class="w-4 h-4 {% if req.status == 'approved' %}text-linear-green{% else %}text-linear-red{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="text-linear-text-tertiary">
+                        {% if req.status == 'approved' %}Approved{% else %}Rejected{% endif %}{% if req.reviewed_at %} on {{ req.reviewed_at|date:"M d, Y" }}{% endif %}
+                        {% if req.reviewed_by %} by {{ req.reviewed_by.username }}{% endif %}
+                    </span>
+                </div>
+                {% if req.rejection_reason %}
+                <p class="text-linear-red text-sm mt-2">Reason: {{ req.rejection_reason }}</p>
+                {% endif %}
+                {% if req.review_notes %}
+                <p class="text-linear-text-tertiary text-sm mt-2">{{ req.review_notes }}</p>
+                {% endif %}
+            </div>
+            {% elif req.status == 'under_review' %}
+            <div class="mt-4 p-3 bg-linear-blue/10 border border-linear-blue/30 rounded-lg">
+                <div class="flex items-center gap-2 text-sm">
+                    <svg class="w-4 h-4 text-linear-blue animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    <span class="text-linear-blue">Currently under review by our team{% if req.reviewed_by %} ({{ req.reviewed_by.username }}){% endif %}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="mt-4 flex items-center justify-between px-6 pb-6">
+                <a href="{% url 'orders:purchase-request-detail' req.id %}" class="text-linear-purple hover:text-white text-sm flex items-center gap-1">
+                    <span>View Details</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                {% if req.status == 'pending' %}
+                <a href="{% url 'orders:purchase-request-cancel' req.id %}" class="text-linear-red hover:text-white text-sm">Cancel Request</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="mt-8 flex justify-center gap-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}" class="px-4 py-2 bg-linear-surface-2 text-linear-text-tertiary rounded-lg hover:bg-linear-surface text-sm">Previous</a>
+        {% endif %}
+        <span class="px-4 py-2 bg-linear-purple/20 text-linear-purple rounded-lg text-sm">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}" class="px-4 py-2 bg-linear-surface-2 text-linear-text-tertiary rounded-lg hover:bg-linear-surface text-sm">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="card rounded-xl p-12 text-center">
+        <div class="w-16 h-16 mx-auto mb-6 bg-linear-surface-2 rounded-full flex items-center justify-center">
+            <svg class="w-8 h-8 text-linear-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+            </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">No Purchase Requests</h3>
+        <p class="text-linear-text-tertiary text-sm mb-6">
+            {% if current_status %}No {{ current_status }} requests found.{% else %}You haven't made any purchase requests yet.{% endif %}
+        </p>
+        <a href="{% url 'verification:robot-list' %}" class="inline-flex items-center gap-2 px-6 py-3 btn-primary text-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            Browse robots
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+

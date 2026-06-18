@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ faq.question }} - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 font-mono text-sm mb-1">FAQ</p>
+                    <h1 class="text-2xl font-bold text-cyber-lime">{{ faq.question }}</h1>
+                </div>
+                <a href="{% url 'support:faq-list' %}" class="text-cyber-lime hover:underline font-mono text-sm">
+                    ← All FAQs
+                </a>
+            </div>
+        </div>
+
+        <!-- Answer -->
+        <div class="glass-effect cyber-border rounded-lg p-6">
+            <div class="prose prose-invert max-w-none text-slate-300">
+                {{ faq.answer|linebreaks }}
+            </div>
+            
+            <div class="mt-6 pt-6 border-t border-slate-700 flex items-center justify-between">
+                <div>
+                    {% if faq.category %}
+                    <span class="px-3 py-1 text-sm bg-slate-700/50 text-slate-400 rounded">{{ faq.category.name }}</span>
+                    {% endif %}
+                </div>
+                <span class="text-slate-500 text-xs font-mono">Updated: {{ faq.updated_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mt-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm mb-2">Was this helpful?</p>
+                    <div class="flex items-center gap-2">
+                        <form method="post" action="{% url 'support:faq-helpful' faq.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="px-4 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 font-mono text-sm">
+                                👍 Yes
+                            </button>
+                        </form>
+                        <a href="{% url 'support:support-ticket-create' %}" class="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 font-mono text-sm">
+                            👎 No, I need help
+                        </a>
+                    </div>
+                </div>
+                {% if request.user.is_staff %}
+                <div class="flex items-center gap-2">
+                    <a href="{% url 'support:faq-edit' faq.id %}" class="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 font-mono text-sm">
+                        Edit
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Related -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mt-6">
+            <h3 class="text-lg font-bold text-cyber-lime mb-4">STILL NEED HELP?</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="{% url 'support:faq-list' %}" class="flex items-center gap-3 p-4 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors">
+                    <span class="text-2xl">❓</span>
+                    <div>
+                        <p class="text-slate-200 font-semibold">Browse All FAQs</p>
+                        <p class="text-slate-500 text-sm">Find more answers</p>
+                    </div>
+                </a>
+                <a href="{% url 'support:support-ticket-create' %}" class="flex items-center gap-3 p-4 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors">
+                    <span class="text-2xl">🎫</span>
+                    <div>
+                        <p class="text-slate-200 font-semibold">Submit a Ticket</p>
+                        <p class="text-slate-500 text-sm">Get personalized support</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Request Verification - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-linear-bg py-12">
+    <div class="max-w-4xl mx-auto px-6">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-semibold text-white mb-2">Request verification</h1>
+            <p class="text-linear-text-secondary">Submit a request for clearance to access restricted products. Please provide accurate information and upload required documents.</p>
+        </div>
+        
+        <div class="card p-8">
+
+            <form method="post" enctype="multipart/form-data" class="space-y-8">
+                {% csrf_token %}
+                
+                {% if form.errors or id_form.errors or military_form.errors %}
+                <div class="bg-linear-red/10 border border-linear-red/30 rounded-lg p-4">
+                    <p class="text-linear-red text-sm font-medium mb-2">Please correct the errors below:</p>
+                    <ul class="list-disc list-inside text-linear-text-secondary text-sm space-y-1">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for field, errors in id_form.errors.items %}
+                            {% for error in errors %}
+                                <li>Identity Document - {{ field }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for field, errors in military_form.errors.items %}
+                            {% for error in errors %}
+                                <li>Military Affiliation - {{ field }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Requested Clearance Level -->
+                <div>
+                    <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">
+                        {{ form.requested_clearance.label }} <span class="text-linear-red">*</span>
+                    </label>
+                    <select name="requested_clearance" required class="w-full">
+                        <option value="">Select clearance level...</option>
+                        {% for level in form.requested_clearance.field.queryset %}
+                        <option value="{{ level.id }}">{{ level.name }} - {{ level.description }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if form.requested_clearance.errors %}
+                    <p class="text-linear-red text-xs mt-1.5">{{ form.requested_clearance.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Reason for Request -->
+                <div>
+                    <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">
+                        {{ form.reason.label }} <span class="text-linear-red">*</span>
+                    </label>
+                    <textarea name="reason" rows="4" required
+                              class="w-full"
+                              placeholder="Explain why you need this clearance level..."></textarea>
+                    {% if form.reason.errors %}
+                    <p class="text-linear-red text-xs mt-1.5">{{ form.reason.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Intended Use -->
+                <div>
+                    <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">
+                        {{ form.intended_use.label }} <span class="text-linear-red">*</span>
+                    </label>
+                    <textarea name="intended_use" rows="4" required
+                              class="w-full"
+                              placeholder="Describe how you intend to use restricted products..."></textarea>
+                    {% if form.intended_use.errors %}
+                    <p class="text-linear-red text-xs mt-1.5">{{ form.intended_use.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Identity Document Section -->
+                <div class="border-t border-linear-border pt-8 mt-8">
+                    <h2 class="text-xl font-semibold text-white mb-6">Identity document</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Document Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Document Type <span class="text-linear-red">*</span></label>
+                            <select name="document_type" required class="w-full">
+                                <option value="">Select document type...</option>
+                                {% for value, label in id_form.document_type.field.choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if id_form.document_type.errors %}
+                            <p class="text-linear-red text-xs mt-1.5">{{ id_form.document_type.errors }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Document Number -->
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Document Number <span class="text-linear-red">*</span></label>
+                            <input type="text" name="document_number" required maxlength="100"
+                                   class="w-full"
+                                   placeholder="Enter your document number">
+                            {% if id_form.document_number.errors %}
+                            <p class="text-linear-red text-xs mt-1.5">{{ id_form.document_number.errors }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Issuing Country -->
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Issuing Country <span class="text-linear-red">*</span></label>
+                            <input type="text" name="issuing_country" required maxlength="100"
+                                   class="w-full"
+                                   placeholder="e.g., United States, United Kingdom">
+                            {% if id_form.issuing_country.errors %}
+                            <p class="text-linear-red text-xs mt-1.5">{{ id_form.issuing_country.errors }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Issuing Authority -->
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Issuing Authority <span class="text-linear-text-tertiary">(Optional)</span></label>
+                            <input type="text" name="issuing_authority" maxlength="200"
+                                   class="w-full"
+                                   placeholder="e.g., Department of Motor Vehicles">
+                            {% if id_form.issuing_authority.errors %}
+                            <p class="text-linear-red text-xs mt-1.5">{{ id_form.issuing_authority.errors }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Issue Date & Expiry Date -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Issue Date</label>
+                                <input type="date" name="issue_date" class="w-full">
+                                {% if id_form.issue_date.errors %}
+                                <p class="text-linear-red text-xs mt-1.5">{{ id_form.issue_date.errors }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Expiry Date</label>
+                                <input type="date" name="expiry_date" class="w-full">
+                                {% if id_form.expiry_date.errors %}
+                                <p class="text-linear-red text-xs mt-1.5">{{ id_form.expiry_date.errors }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                        <!-- ID Card Front Upload -->
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">ID Card Front Image <span class="text-linear-red">*</span></label>
+                            <input type="file" name="front_image" accept="image/*" required
+                                   class="w-full">
+                            <p class="text-linear-text-tertiary text-xs mt-1.5">Upload a clear photo of the front of your government-issued ID</p>
+                            {% if id_form.front_image.errors %}
+                            <p class="text-linear-red text-xs mt-1.5">{{ id_form.front_image.errors }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- ID Card Back Upload -->
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">ID Card Back Image <span class="text-linear-text-tertiary">(Optional)</span></label>
+                            <input type="file" name="back_image" accept="image/*"
+                                   class="w-full">
+                            <p class="text-linear-text-tertiary text-xs mt-1.5">Upload the back of your ID card if it contains relevant information</p>
+                            {% if id_form.back_image.errors %}
+                            <p class="text-linear-red text-xs mt-1.5">{{ id_form.back_image.errors }}</p>
+                            {% endif %}
+                        </div>
+                </div>
+
+                <!-- Military Affiliation Section -->
+                <div class="border-t border-linear-border pt-8 mt-8">
+                    <h2 class="text-xl font-semibold text-white mb-2">Military affiliation <span class="text-linear-text-tertiary font-normal">(Optional)</span></h2>
+                    <p class="text-linear-text-secondary text-sm mb-6">Provide your military service information if applicable</p>
+                    
+                    <div class="space-y-6">
+                    
+                        <!-- Branch & Rank -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Branch</label>
+                                <select name="branch" class="w-full">
+                                    <option value="">Select branch...</option>
+                                    {% for value, label in military_form.branch.field.choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if military_form.branch.errors %}
+                                <p class="text-linear-red text-xs mt-1.5">{{ military_form.branch.errors }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Rank</label>
+                                <select name="rank" class="w-full">
+                                    <option value="">Select rank...</option>
+                                    {% for value, label in military_form.rank.field.choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if military_form.rank.errors %}
+                                <p class="text-linear-red text-xs mt-1.5">{{ military_form.rank.errors }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Rank Title & Unit -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Rank Title</label>
+                                <input type="text" name="rank_title" maxlength="100"
+                                       class="w-full"
+                                       placeholder="e.g., Captain, Sergeant, Lieutenant">
+                                {% if military_form.rank_title.errors %}
+                                <p class="text-linear-red text-xs mt-1.5">{{ military_form.rank_title.errors }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Unit</label>
+                                <input type="text" name="unit" maxlength="200"
+                                       class="w-full"
+                                       placeholder="e.g., 1st Battalion, 101st Airborne">
+                                {% if military_form.unit.errors %}
+                                <p class="text-linear-red text-xs mt-1.5">{{ military_form.unit.errors }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Service Number -->
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Service Number</label>
+                            <input type="text" name="service_number" maxlength="100"
+                                   class="w-full"
+                                   placeholder="Your service or identification number">
+                            {% if military_form.service_number.errors %}
+                            <p class="text-linear-red text-xs mt-1.5">{{ military_form.service_number.errors }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Status Checkboxes -->
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-2">Status</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name="is_active_duty" value="1"
+                                           class="w-4 h-4 rounded border-linear-border bg-linear-surface text-white focus:ring-2 focus:ring-linear-blue">
+                                    <span class="text-sm text-linear-text-secondary">Active Duty</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name="is_veteran" value="1"
+                                           class="w-4 h-4 rounded border-linear-border bg-linear-surface text-white focus:ring-2 focus:ring-linear-blue">
+                                    <span class="text-sm text-linear-text-secondary">Veteran</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name="is_reservist" value="1"
+                                           class="w-4 h-4 rounded border-linear-border bg-linear-surface text-white focus:ring-2 focus:ring-linear-blue">
+                                    <span class="text-sm text-linear-text-secondary">Reservist</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name="is_contractor" value="1"
+                                           class="w-4 h-4 rounded border-linear-border bg-linear-surface text-white focus:ring-2 focus:ring-linear-blue">
+                                    <span class="text-sm text-linear-text-secondary">Contractor</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Service Dates -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Service Start Date</label>
+                                <input type="date" name="service_start_date" class="w-full">
+                                {% if military_form.service_start_date.errors %}
+                                <p class="text-linear-red text-xs mt-1.5">{{ military_form.service_start_date.errors }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Service End Date</label>
+                                <input type="date" name="service_end_date" class="w-full">
+                                {% if military_form.service_end_date.errors %}
+                                <p class="text-linear-red text-xs mt-1.5">{{ military_form.service_end_date.errors }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Important Notice -->
+                <div class="bg-linear-blue/10 border border-linear-blue/30 rounded-lg p-4">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-linear-blue flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-medium text-white mb-1">Important</p>
+                            <p class="text-sm text-linear-text-secondary">
+                                All uploaded documents will be securely stored and reviewed by our compliance team. 
+                                Please ensure images are clear and all information is visible.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex items-center justify-between pt-6 border-t border-linear-border">
+                    <a href="{% url 'verification:request-list' %}" class="text-sm text-linear-text-secondary hover:text-white transition-colors">
+                        ← Back to requests
+                    </a>
+                    <button type="submit" class="btn-primary px-6 py-2.5">
+                        Submit request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

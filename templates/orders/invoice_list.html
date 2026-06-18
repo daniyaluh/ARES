@@ -1,0 +1,138 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Invoices - ARES{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-10">
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold text-white">My Invoices</h1>
+            <p class="text-linear-text-tertiary text-sm">View and manage your invoices</p>
+        </div>
+        <div>
+            <a href="{% url 'orders:purchase-request-list' %}" class="text-linear-purple hover:text-white text-sm">← Back to Purchase Requests</a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="card text-center">
+            <p class="text-2xl font-bold text-linear-purple">{{ all_count }}</p>
+            <p class="text-linear-text-tertiary text-sm">Total Invoices</p>
+        </div>
+        <div class="card text-center">
+            <p class="text-2xl font-bold text-linear-yellow">{{ pending_count }}</p>
+            <p class="text-linear-text-tertiary text-sm">Pending Payment</p>
+        </div>
+        <div class="card text-center">
+            <p class="text-2xl font-bold text-linear-green">{{ paid_count }}</p>
+            <p class="text-linear-text-tertiary text-sm">Paid</p>
+        </div>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="card mb-8">
+        <div class="flex flex-wrap gap-2">
+            <a href="?status=" class="btn-filter {% if not status_filter %}active{% endif %}">All</a>
+            <a href="?status=issued" class="btn-filter {% if status_filter == 'issued' %}active-blue{% endif %}">Issued</a>
+            <a href="?status=sent" class="btn-filter {% if status_filter == 'sent' %}active-yellow{% endif %}">Sent</a>
+            <a href="?status=paid" class="btn-filter {% if status_filter == 'paid' %}active-green{% endif %}">Paid</a>
+            <a href="?status=overdue" class="btn-filter {% if status_filter == 'overdue' %}active-red{% endif %}">Overdue</a>
+        </div>
+    </div>
+
+    <!-- Invoices Table -->
+    <div class="card overflow-hidden">
+        {% if invoices %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-linear-surface-2">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs text-linear-text-tertiary uppercase">Invoice #</th>
+                        <th class="px-6 py-4 text-left text-xs text-linear-text-tertiary uppercase">Product</th>
+                        <th class="px-6 py-4 text-left text-xs text-linear-text-tertiary uppercase">Amount</th>
+                        <th class="px-6 py-4 text-left text-xs text-linear-text-tertiary uppercase">Status</th>
+                        <th class="px-6 py-4 text-left text-xs text-linear-text-tertiary uppercase">Issue Date</th>
+                        <th class="px-6 py-4 text-left text-xs text-linear-text-tertiary uppercase">Due Date</th>
+                        <th class="px-6 py-4 text-left text-xs text-linear-text-tertiary uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-linear-border">
+                    {% for invoice in invoices %}
+                    <tr class="hover:bg-linear-surface-2/50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-linear-purple font-semibold">{{ invoice.invoice_number }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if invoice.purchase_request and invoice.purchase_request.product %}
+                                <p class="text-white">{{ invoice.purchase_request.product.title|truncatechars:40 }}</p>
+                            {% else %}
+                                <p class="text-linear-text-tertiary">-</p>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-white">${{ invoice.total_amount }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded font-semibold
+                                {% if invoice.status == 'paid' %}bg-linear-green/20 text-linear-green
+                                {% elif invoice.status == 'overdue' %}bg-linear-red/20 text-linear-red
+                                {% elif invoice.status == 'sent' %}bg-linear-yellow/20 text-linear-yellow
+                                {% elif invoice.status == 'issued' %}bg-linear-blue/20 text-linear-blue
+                                {% elif invoice.status == 'cancelled' %}bg-linear-surface-2/20 text-linear-text-tertiary
+                                {% else %}bg-linear-surface-2/20 text-linear-text-tertiary{% endif %}">
+                                {{ invoice.get_status_display|upper }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-linear-text-tertiary text-sm">{{ invoice.issue_date|date:"M d, Y" }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if invoice.due_date %}
+                                <span class="text-linear-text-tertiary text-sm">{{ invoice.due_date|date:"M d, Y" }}</span>
+                            {% else %}
+                                <span class="text-linear-text-tertiary text-sm">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex gap-2">
+                                <a href="{% url 'orders:invoice-detail' invoice.id %}" class="btn-secondary text-xs">View</a>
+                                <a href="{% url 'orders:invoice-download' invoice.id %}" class="btn-secondary text-xs">Print</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if invoices.has_other_pages %}
+        <div class="bg-linear-surface-2 px-6 py-4">
+            <div class="flex justify-center gap-2">
+                {% if invoices.has_previous %}
+                    <a href="?page={{ invoices.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn-filter">Previous</a>
+                {% endif %}
+                <span class="px-3 py-1 text-linear-text-tertiary">Page {{ invoices.number }} of {{ invoices.paginator.num_pages }}</span>
+                {% if invoices.has_next %}
+                    <a href="?page={{ invoices.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn-filter">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-16">
+            <svg class="w-16 h-16 text-linear-border mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p class="text-linear-text-tertiary text-lg mb-2">No invoices found</p>
+            <p class="text-linear-text-tertiary text-sm">Invoices will appear here after your purchase requests are approved</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Security Key - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-effect cyber-border rounded-lg p-8">
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-4xl font-bold text-cyber-lime font-mono">ADD SECURITY KEY</h1>
+                <a href="{% url 'users:security-key-list' %}" class="cyber-button px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600">
+                    BACK
+                </a>
+            </div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-500/20 border border-red-500/50 text-red-400{% elif message.tags == 'success' %}bg-cyber-lime/20 border border-cyber-lime/50 text-cyber-lime{% else %}bg-blue-500/20 border border-blue-500/50 text-blue-400{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <div class="mb-6">
+                <p class="text-slate-400 text-sm font-mono">
+                    Register a new security key for two-factor authentication. Security keys provide hardware-based authentication for enhanced account security.
+                </p>
+            </div>
+            
+            <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-6 mb-8">
+                <h3 class="text-blue-400 font-bold text-sm font-mono mb-3">SUPPORTED KEY TYPES</h3>
+                <ul class="text-blue-300 text-sm space-y-2 list-disc list-inside font-mono">
+                    <li><strong>FIDO2/WebAuthn:</strong> Hardware security keys (YubiKey, Titan, etc.)</li>
+                    <li><strong>TOTP:</strong> Time-based one-time passwords (Google Authenticator, Authy, etc.)</li>
+                    <li><strong>Backup Codes:</strong> One-time use recovery codes</li>
+                    <li><strong>SMS Code:</strong> Verification via text message</li>
+                    <li><strong>Email Code:</strong> Verification via email</li>
+                </ul>
+            </div>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="id_key_type" class="block text-cyber-lime font-mono text-sm mb-2">KEY TYPE</label>
+                    <select name="key_type" id="id_key_type" required class="cyber-input w-full">
+                        <option value="">--- Select Key Type ---</option>
+                        <option value="fido2">FIDO2/WebAuthn (Hardware Key)</option>
+                        <option value="totp">TOTP (Time-based - Authenticator App)</option>
+                        <option value="backup">Backup Code</option>
+                        <option value="sms">SMS Code</option>
+                        <option value="email">Email Code</option>
+                    </select>
+                    <p class="text-slate-500 text-xs mt-1 font-mono">Select the type of security key you want to register</p>
+                </div>
+                
+                <div>
+                    <label for="id_name" class="block text-cyber-lime font-mono text-sm mb-2">KEY NAME</label>
+                    <input type="text" name="name" id="id_name" required maxlength="100" 
+                           placeholder="e.g., My YubiKey, iPhone Authenticator, etc."
+                           class="cyber-input w-full">
+                    <p class="text-slate-500 text-xs mt-1 font-mono">Give this key a memorable name to identify it</p>
+                </div>
+                
+                <div id="fido2-instructions" class="hidden bg-cyber-lime/10 border border-cyber-lime/30 rounded-lg p-4">
+                    <h4 class="text-cyber-lime font-bold text-sm font-mono mb-2">FIDO2/WebAuthn Instructions:</h4>
+                    <ol class="text-slate-300 text-sm space-y-1 list-decimal list-inside font-mono">
+                        <li>Click "Register Key" below</li>
+                        <li>When prompted by your browser, follow the on-screen instructions</li>
+                        <li>Press the button on your hardware key or use your device's biometric authentication</li>
+                        <li>Your key will be registered automatically</li>
+                    </ol>
+                </div>
+                
+                <div id="totp-instructions" class="hidden bg-cyber-lime/10 border border-cyber-lime/30 rounded-lg p-4">
+                    <h4 class="text-cyber-lime font-bold text-sm font-mono mb-2">TOTP Instructions:</h4>
+                    <ol class="text-slate-300 text-sm space-y-1 list-decimal list-inside font-mono">
+                        <li>Scan the QR code that will appear after clicking "Register Key"</li>
+                        <li>Enter the verification code from your authenticator app</li>
+                        <li>Your TOTP key will be registered</li>
+                    </ol>
+                </div>
+                
+                <div id="backup-instructions" class="hidden bg-cyber-lime/10 border border-cyber-lime/30 rounded-lg p-4">
+                    <h4 class="text-cyber-lime font-bold text-sm font-mono mb-2">Backup Codes:</h4>
+                    <p class="text-slate-300 text-sm font-mono">
+                        Backup codes will be generated after registration. Save them in a secure location. Each code can only be used once.
+                    </p>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="is_primary" id="id_is_primary" class="mr-2">
+                        <span class="text-slate-300 font-mono text-sm">Set as primary key</span>
+                    </label>
+                </div>
+                
+                <div class="flex justify-end space-x-4 pt-6 border-t border-slate-700">
+                    <a href="{% url 'users:security-key-list' %}" class="cyber-button px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600">
+                        CANCEL
+                    </a>
+                    <button type="submit" class="cyber-button px-6 py-3 rounded-lg">
+                        REGISTER KEY
+                    </button>
+                </div>
+            </form>
+            
+            <div class="mt-8 pt-8 border-t border-slate-700">
+                <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                    <h3 class="text-yellow-400 font-bold text-sm font-mono mb-2">Security Warning</h3>
+                    <p class="text-yellow-300 text-sm font-mono">
+                        Only register security keys from trusted sources. Never share your security keys or backup codes with anyone.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Show/hide instructions based on key type selection
+    document.getElementById('id_key_type').addEventListener('change', function() {
+        // Hide all instruction divs
+        document.querySelectorAll('[id$="-instructions"]').forEach(div => {
+            div.classList.add('hidden');
+        });
+        
+        // Show relevant instructions
+        const selectedType = this.value;
+        if (selectedType === 'fido2') {
+            document.getElementById('fido2-instructions').classList.remove('hidden');
+        } else if (selectedType === 'totp') {
+            document.getElementById('totp-instructions').classList.remove('hidden');
+        } else if (selectedType === 'backup') {
+            document.getElementById('backup-instructions').classList.remove('hidden');
+        }
+    });
+
+    // FIDO2/WebAuthn registration
+    document.querySelector('form').addEventListener('submit', async function(e) {
+        const keyType = document.getElementById('id_key_type').value;
+        if (keyType === 'fido2') {
+            e.preventDefault();
+            
+            // Check if using 127.0.0.1 - WebAuthn requires localhost
+            if (window.location.hostname === '127.0.0.1') {
+                alert('⚠️ IMPORTANT: Please access this site using "localhost" instead of "127.0.0.1".\n\nWebAuthn/FIDO2 requires the domain to match exactly. Please change the URL to:\nhttp://localhost:8000' + window.location.pathname);
+                return;
+            }
+            
+            // Check WebAuthn support
+            if (!window.PublicKeyCredential) {
+                alert('Your browser does not support WebAuthn. Please use a modern browser (Chrome, Firefox, Edge, or Safari).');
+                return;
+            }
+            
+            const name = document.getElementById('id_name').value;
+            const isPrimary = document.getElementById('id_is_primary').checked;
+            
+            if (!name) {
+                alert('Please enter a name for your security key');
+                return;
+            }
+            
+            try {
+                // Step 1: Get registration challenge
+                const beginResponse = await fetch('{% url "users:fido2-register-begin" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `name=${encodeURIComponent(name)}&is_primary=${isPrimary ? 'on' : ''}`
+                });
+                
+                const beginData = await beginResponse.json();
+                if (!beginData.success) {
+                    alert('Error: ' + beginData.error);
+                    return;
+                }
+                
+                // Step 2: Convert challenge and user ID from base64url to ArrayBuffer
+                const challenge = base64UrlToArrayBuffer(beginData.options.challenge);
+                const userId = base64UrlToArrayBuffer(beginData.options.user.id);
+                
+                // Step 3: Create credential via WebAuthn API
+                // CRITICAL: RP ID must match the origin's effective domain
+                // For localhost/127.0.0.1, we must use 'localhost' as RP ID
+                const hostname = window.location.hostname;
+                let rpId = 'localhost'; // Default for localhost
+                
+                if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                    rpId = 'localhost';
+                } else {
+                    // For production, use the hostname (without port)
+                    rpId = hostname;
+                }
+                
+                console.log('WebAuthn Registration - Hostname:', hostname, 'RP ID:', rpId, 'Origin:', window.location.origin);
+                
+                const publicKeyCredentialCreationOptions = {
+                    ...beginData.options,
+                    challenge: challenge,
+                    user: {
+                        ...beginData.options.user,
+                        id: userId
+                    },
+                    rp: {
+                        name: beginData.options.rp.name,
+                        id: rpId  // Override with correct RP ID
+                    }
+                };
+                
+                console.log('WebAuthn Options:', JSON.stringify(publicKeyCredentialCreationOptions, null, 2));
+                
+                const credential = await navigator.credentials.create({
+                    publicKey: publicKeyCredentialCreationOptions
+                });
+                
+                // Step 4: Convert credential to JSON for server
+                const credentialForServer = {
+                    id: credential.id,
+                    rawId: arrayBufferToBase64Url(credential.rawId),
+                    type: credential.type,
+                    response: {
+                        clientDataJSON: arrayBufferToBase64Url(credential.response.clientDataJSON),
+                        attestationObject: arrayBufferToBase64Url(credential.response.attestationObject)
+                    }
+                };
+                
+                // Step 5: Send credential to server
+                const completeResponse = await fetch('{% url "users:fido2-register-complete" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ credential: credentialForServer })
+                });
+                
+                const completeData = await completeResponse.json();
+                if (completeData.success) {
+                    alert('FIDO2 key registered successfully!');
+                    window.location.href = '{% url "users:security-key-list" %}';
+                } else {
+                    alert('Registration failed: ' + completeData.error);
+                }
+            } catch (error) {
+                console.error('FIDO2 registration error:', error);
+                console.error('Error details:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                // Provide more helpful error messages
+                let errorMsg = 'Registration failed: ' + error.message;
+                if (error.message.includes('invalid domain') || error.message.includes('NotAllowedError')) {
+                    errorMsg = 'Domain error: Please make sure you are accessing the site via localhost (not 127.0.0.1) or that the domain is properly configured.';
+                }
+                alert(errorMsg);
+            }
+        }
+    });
+
+    // Helper functions for base64url conversion
+    function base64UrlToArrayBuffer(base64url) {
+        // Add padding if needed
+        let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+            base64 += '=';
+        }
+        try {
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        } catch (e) {
+            console.error('Error converting base64url to ArrayBuffer:', e);
+            throw new Error('Invalid base64url encoding: ' + e.message);
+        }
+    }
+
+    function arrayBufferToBase64Url(buffer) {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+</script>
+{% endblock %}
+
+
+

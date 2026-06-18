@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Verification Requests - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-linear-bg py-12">
+    <div class="max-w-5xl mx-auto px-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-semibold text-white mb-2">Verification requests</h1>
+                <p class="text-linear-text-secondary">Track the status of your clearance requests</p>
+            </div>
+            <a href="{% url 'verification:request' %}" class="btn-primary px-4 py-2.5 text-sm">
+                + New request
+            </a>
+        </div>
+
+        {% if verification_requests %}
+        <div class="space-y-3">
+            {% for request in verification_requests %}
+            <div class="card p-6 hover:border-linear-border-light transition-all">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-white mb-1">{{ request.requested_clearance.name|default:"Clearance Request" }}</h3>
+                        <p class="text-sm text-linear-text-tertiary">Submitted {{ request.submitted_at|date:"M d, Y" }}</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-lg text-xs font-medium
+                        {% if request.status == 'approved' %}bg-linear-green/10 text-linear-green border border-linear-green/20
+                        {% elif request.status == 'rejected' or request.status == 'withdrawn' %}bg-linear-red/10 text-linear-red border border-linear-red/20
+                        {% else %}bg-linear-yellow/10 text-linear-yellow border border-linear-yellow/20{% endif %}">
+                        {{ request.get_status_display }}
+                    </span>
+                </div>
+                <p class="text-linear-text-secondary text-sm mb-4 line-clamp-2">{{ request.reason|truncatewords:30 }}</p>
+                <div class="flex items-center justify-between">
+                    <a href="{% url 'verification:request-detail' request.id %}" class="text-sm text-linear-text-secondary hover:text-white transition-colors flex items-center gap-1.5">
+                        View details
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                    {% if request.status == 'pending' or request.status == 'under_review' %}
+                    <form method="post" action="{% url 'verification:request-withdraw' request.id %}" class="inline-block">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                onclick="return confirm('Are you sure you want to withdraw this request?');"
+                                class="text-sm text-linear-red hover:text-linear-red/80 transition-colors">
+                            Withdraw
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card p-16 text-center">
+            <div class="max-w-md mx-auto">
+                <div class="w-16 h-16 bg-linear-surface-2 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-linear-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">No verification requests</h3>
+                <p class="text-linear-text-secondary text-sm mb-6">Get started by submitting your first verification request.</p>
+                <a href="{% url 'verification:request' %}" class="btn-primary inline-flex items-center gap-2 px-6 py-2.5">
+                    Create request
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}My Earnings - ARES{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-cyan-400 mb-2">My Earnings</h1>
+        <p class="text-gray-400">Detailed breakdown of all your sales and earnings</p>
+    </div>
+
+    <!-- Summary -->
+    <div class="bg-gray-800 border border-cyan-500/30 rounded-lg p-6 mb-6">
+        <div class="text-center">
+            <p class="text-gray-400 text-sm mb-2">Total Earnings (Filtered)</p>
+            <p class="text-4xl font-bold text-cyan-400">${{ total_earnings|floatformat:2 }}</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 mb-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-gray-400 text-sm mb-2">Status</label>
+                <select name="status" class="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-gray-200">
+                    <option value="">All Statuses</option>
+                    <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="on_hold" {% if selected_status == 'on_hold' %}selected{% endif %}>On Hold</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 text-sm mb-2">Product</label>
+                <select name="product" class="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-gray-200">
+                    <option value="">All Products</option>
+                    {% for product in seller_products %}
+                    <option value="{{ product.id }}" {% if selected_product == product.id|stringformat:"s" %}selected{% endif %}>
+                        {{ product.title|truncatewords:5 }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 text-sm mb-2">Payment Status</label>
+                <select name="paid" class="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-gray-200">
+                    <option value="">All</option>
+                    <option value="paid" {% if selected_paid == 'paid' %}selected{% endif %}>Paid Out</option>
+                    <option value="unpaid" {% if selected_paid == 'unpaid' %}selected{% endif %}>Pending Payment</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded transition-colors">
+                    Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Earnings Table -->
+    <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-900">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Product</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">Gross Sale</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">Commission</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">Net Earning</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-400 uppercase">Status</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-400 uppercase">Paid</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700">
+                {% for earning in earnings %}
+                <tr class="hover:bg-gray-900/50">
+                    <td class="px-6 py-4 text-sm text-gray-200">{{ earning.earned_date|date:"M d, Y" }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-200">
+                        {% if earning.product %}
+                            {{ earning.product.title|truncatewords:5 }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-right text-gray-300">${{ earning.gross_sale_amount|floatformat:2 }}</td>
+                    <td class="px-6 py-4 text-sm text-right text-red-400">-${{ earning.platform_commission|floatformat:2 }}</td>
+                    <td class="px-6 py-4 text-sm text-right text-green-400 font-semibold">${{ earning.net_earnings|floatformat:2 }}</td>
+                    <td class="px-6 py-4 text-sm text-center">
+                        <span class="px-2 py-1 text-xs rounded {% if earning.status == 'completed' %}bg-green-500/20 text-green-400{% elif earning.status == 'pending' %}bg-yellow-500/20 text-yellow-400{% elif earning.status == 'on_hold' %}bg-orange-500/20 text-orange-400{% else %}bg-gray-500/20 text-gray-400{% endif %}">
+                            {{ earning.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-center">
+                        {% if earning.is_paid_out %}
+                            <span class="px-2 py-1 text-xs rounded bg-green-500/20 text-green-400">✓ Paid</span>
+                        {% else %}
+                            <span class="px-2 py-1 text-xs rounded bg-yellow-500/20 text-yellow-400">Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">No earnings found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if earnings.has_other_pages %}
+    <div class="flex justify-center mt-6">
+        <nav class="flex gap-2">
+            {% if earnings.has_previous %}
+            <a href="?page={{ earnings.previous_page_number }}" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-200">Previous</a>
+            {% endif %}
+            <span class="px-4 py-2 bg-gray-900 rounded text-gray-400">Page {{ earnings.number }} of {{ earnings.paginator.num_pages }}</span>
+            {% if earnings.has_next %}
+            <a href="?page={{ earnings.next_page_number }}" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-200">Next</a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+
+    <!-- Back to Dashboard -->
+    <div class="mt-6">
+        <a href="{% url 'orders:seller-finance-dashboard' %}" class="text-cyan-400 hover:text-cyan-300">← Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

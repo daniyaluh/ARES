@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Users - Staff Dashboard{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold text-cyber-lime mb-2 font-mono">ALL USERS</h1>
+                <p class="text-slate-400 font-mono">Manage all user accounts</p>
+            </div>
+            <a href="{% url 'users:staff-dashboard' %}" class="text-slate-400 hover:text-cyber-lime font-mono flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-effect cyber-border rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 font-mono text-sm">TOTAL USERS</span>
+                    <span class="text-2xl font-bold text-cyber-lime font-mono">{{ total_users }}</span>
+                </div>
+            </div>
+            <div class="glass-effect cyber-border rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 font-mono text-sm">BUYERS</span>
+                    <span class="text-2xl font-bold text-blue-400 font-mono">{{ total_buyers }}</span>
+                </div>
+            </div>
+            <div class="glass-effect cyber-border rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 font-mono text-sm">SELLERS</span>
+                    <span class="text-2xl font-bold text-green-400 font-mono">{{ total_sellers }}</span>
+                </div>
+            </div>
+            <div class="glass-effect cyber-border rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 font-mono text-sm">STAFF</span>
+                    <span class="text-2xl font-bold text-purple-400 font-mono">{{ total_staff }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="glass-effect cyber-border rounded-lg p-4 mb-6">
+            <form method="get" class="flex flex-col md:flex-row gap-4">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Search by username or email..."
+                       class="flex-1 px-4 py-2 bg-slate-800/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyber-lime focus:ring-1 focus:ring-cyber-lime focus:outline-none">
+                <div class="flex gap-2">
+                    <select name="role" class="px-4 py-2 bg-slate-800/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none">
+                        <option value="all" {% if role_filter == 'all' %}selected{% endif %}>All Roles</option>
+                        <option value="buyer" {% if role_filter == 'buyer' %}selected{% endif %}>Buyers</option>
+                        <option value="seller" {% if role_filter == 'seller' %}selected{% endif %}>Sellers</option>
+                        <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admins</option>
+                        <option value="support" {% if role_filter == 'support' %}selected{% endif %}>Support</option>
+                        <option value="moderator" {% if role_filter == 'moderator' %}selected{% endif %}>Moderators</option>
+                    </select>
+                    <button type="submit" class="cyber-button px-6 py-2 rounded-lg">
+                        Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {% if users_list %}
+        <div class="glass-effect cyber-border rounded-lg overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-slate-800/50 border-b border-slate-700">
+                    <tr>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">USER</th>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">EMAIL</th>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">ROLE</th>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">STATUS</th>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">JOINED</th>
+                        <th class="text-center px-6 py-4 text-cyber-lime font-mono text-sm">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-700">
+                    {% for u in users_list %}
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center">
+                                    {% if u.avatar %}
+                                    <img src="{{ u.avatar.url }}" alt="{{ u.username }}" class="w-10 h-10 rounded-full object-cover">
+                                    {% else %}
+                                    <span class="text-sm font-bold text-cyber-lime">{{ u.username|first|upper }}</span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <p class="text-slate-200 font-semibold">{{ u.username }}</p>
+                                    {% if u.is_staff %}
+                                    <span class="text-xs text-purple-400 font-mono">STAFF</span>
+                                    {% endif %}
+                                    {% if u.is_superuser %}
+                                    <span class="text-xs text-red-400 font-mono">SUPERUSER</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-slate-400">{{ u.email }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs rounded font-mono
+                                {% if u.role == 'admin' %}bg-red-500/20 text-red-400
+                                {% elif u.role == 'seller' %}bg-green-500/20 text-green-400
+                                {% elif u.role == 'support' %}bg-purple-500/20 text-purple-400
+                                {% elif u.role == 'moderator' %}bg-orange-500/20 text-orange-400
+                                {% else %}bg-blue-500/20 text-blue-400{% endif %}">
+                                {{ u.role|upper }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if u.is_active %}
+                            <span class="px-2 py-1 text-xs bg-green-500/20 text-green-400 rounded font-mono">ACTIVE</span>
+                            {% else %}
+                            <span class="px-2 py-1 text-xs bg-red-500/20 text-red-400 rounded font-mono">INACTIVE</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-slate-400 font-mono text-sm">{{ u.date_joined|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-center gap-2">
+                                <a href="{% url 'users:public-profile' u.username %}" 
+                                   class="px-3 py-1 bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-all font-mono text-xs">
+                                    VIEW
+                                </a>
+                                {% if u.role == 'seller' and u.is_seller_approved %}
+                                <a href="{% url 'users:staff-revoke-seller' u.id %}" 
+                                   class="px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded hover:bg-red-500/30 transition-all font-mono text-xs">
+                                    REVOKE SELLER
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="glass-effect cyber-border rounded-lg p-12 text-center">
+            <svg class="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+            <h3 class="text-xl font-bold text-slate-400 font-mono mb-2">NO USERS FOUND</h3>
+            <p class="text-slate-500">No users match the current filter.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

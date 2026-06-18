@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Backup Codes - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-effect cyber-border rounded-lg p-8">
+            <h1 class="text-4xl font-bold text-cyber-lime font-mono mb-2">BACKUP CODES</h1>
+            <p class="text-slate-400 text-sm mb-8 font-mono">Save these codes in a secure location</p>
+            
+            <div class="space-y-6">
+                <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-6">
+                    <h3 class="text-red-400 font-bold text-lg font-mono mb-4">⚠️ SAVE THESE CODES NOW</h3>
+                    <p class="text-red-300 text-sm font-mono mb-4">
+                        These codes will NOT be shown again. Each code can only be used once. Store them securely.
+                    </p>
+                </div>
+                
+                <div class="bg-slate-800 rounded-lg p-6 border-2 border-cyber-lime/50">
+                    <h3 class="text-cyber-lime font-bold text-lg font-mono mb-4 text-center">YOUR BACKUP CODES</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        {% for code in backup_codes %}
+                        <div class="bg-slate-900 rounded-lg p-3 border border-slate-700 text-center">
+                            <code class="text-cyber-lime font-mono text-lg font-bold">{{ code }}</code>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                    <h4 class="text-blue-400 font-bold text-sm font-mono mb-2">HOW TO USE:</h4>
+                    <ul class="text-blue-300 text-sm space-y-1 list-disc list-inside font-mono">
+                        <li>Use these codes if you lose access to your authenticator app</li>
+                        <li>Each code can only be used once</li>
+                        <li>After using a code, it will be invalidated</li>
+                        <li>Store these codes in a password manager or secure physical location</li>
+                    </ul>
+                </div>
+                
+                <form method="post" class="pt-6 border-t border-slate-700">
+                    {% csrf_token %}
+                    <button type="submit" class="cyber-button px-6 py-3 rounded-lg w-full text-lg font-bold">
+                        I'VE SAVED MY CODES
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+

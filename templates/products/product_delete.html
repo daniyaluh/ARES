@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Product - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-red-400">Delete Product</h1>
+                    <p class="text-slate-400 mt-1 font-mono text-sm">This action cannot be undone</p>
+                </div>
+                <a href="{% url 'products:product-detail' product.id %}" class="text-cyber-lime hover:underline font-mono text-sm">
+                    ← Cancel
+                </a>
+            </div>
+        </div>
+
+        <!-- Warning -->
+        <div class="glass-effect border-2 border-red-500/50 rounded-lg p-6 mb-6">
+            <div class="flex items-start gap-4">
+                <div class="text-4xl">⚠️</div>
+                <div>
+                    <h2 class="text-xl font-bold text-red-400 mb-2">Confirm Deletion</h2>
+                    <p class="text-slate-300 mb-4">
+                        Are you sure you want to permanently delete this product?
+                    </p>
+                    {% if is_staff_action %}
+                    <div class="bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-lg text-sm mb-4">
+                        <strong>Staff Action:</strong> You are deleting a product owned by <strong>{{ product.seller.username }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-bold text-cyber-lime mb-4">PRODUCT TO DELETE</h3>
+            <div class="flex items-start gap-4">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.title }}" class="w-24 h-24 object-cover rounded-lg border border-slate-600">
+                {% else %}
+                <div class="w-24 h-24 bg-slate-800 rounded-lg border border-slate-600 flex items-center justify-center">
+                    <span class="text-3xl">🤖</span>
+                </div>
+                {% endif %}
+                <div class="flex-1">
+                    <h4 class="text-xl font-bold text-slate-200">{{ product.title }}</h4>
+                    <p class="text-slate-400 text-sm mt-1">{{ product.description|truncatechars:100 }}</p>
+                    <div class="flex items-center gap-4 mt-3">
+                        <span class="text-cyber-lime font-bold">${{ product.price|floatformat:2 }}</span>
+                        <span class="px-2 py-1 text-xs bg-slate-700 text-slate-400 rounded font-mono">
+                            {{ product.get_status_display|upper }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="mt-6 pt-6 border-t border-slate-700 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">SELLER</p>
+                    <p class="text-slate-200">{{ product.seller.username }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">CREATED</p>
+                    <p class="text-slate-200 font-mono text-sm">{{ product.created_at|date:"M d, Y" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">CATEGORY</p>
+                    <p class="text-slate-200">{{ product.category.name|default:"Uncategorized" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">PRODUCT ID</p>
+                    <p class="text-slate-200 font-mono text-xs">{{ product.id }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- What Will Be Deleted -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-bold text-red-400 mb-4">WHAT WILL BE DELETED</h3>
+            <ul class="space-y-2 text-slate-400 text-sm">
+                <li class="flex items-center gap-2">
+                    <span class="text-red-400">✗</span>
+                    <span>The product listing and all associated data</span>
+                </li>
+                <li class="flex items-center gap-2">
+                    <span class="text-red-400">✗</span>
+                    <span>All product images and gallery items</span>
+                </li>
+                <li class="flex items-center gap-2">
+                    <span class="text-red-400">✗</span>
+                    <span>All product variants and specifications</span>
+                </li>
+                <li class="flex items-center gap-2">
+                    <span class="text-red-400">✗</span>
+                    <span>All reviews and ratings for this product</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Actions -->
+        <div class="glass-effect cyber-border rounded-lg p-6">
+            <form method="post" class="flex items-center justify-end gap-4">
+                {% csrf_token %}
+                <a href="{% url 'products:product-detail' product.id %}" class="px-6 py-3 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 font-mono">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-mono font-bold">
+                    🗑️ Delete Product
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

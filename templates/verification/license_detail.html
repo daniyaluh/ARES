@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}License {% if license.license_number %}#{{ license.license_number }}{% else %}Application{% endif %} - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="{% url 'verification:license-list' %}" class="text-slate-400 hover:text-cyber-lime text-sm font-mono mb-2 inline-block">
+                ← Back to Licenses
+            </a>
+            <div class="flex items-center justify-between">
+                <div>
+                    {% if license.license_number %}
+                    <h1 class="text-3xl font-bold text-cyber-lime font-mono mb-2">LICENSE #{{ license.license_number }}</h1>
+                    {% else %}
+                    <h1 class="text-3xl font-bold text-slate-400 font-mono mb-2">APPLICATION #{{ license.id|slice:":8" }}...</h1>
+                    {% endif %}
+                    <p class="text-slate-400">{{ license.get_license_type_display }}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <!-- Main Status Badge -->
+                    <span class="px-4 py-2 text-sm rounded-lg font-mono
+                        {% if license.status == 'approved' %}bg-green-500/20 text-green-400 border border-green-500/30
+                        {% elif license.status == 'pending' %}bg-yellow-500/20 text-yellow-400 border border-yellow-500/30
+                        {% elif license.status == 'under_review' %}bg-blue-500/20 text-blue-400 border border-blue-500/30
+                        {% elif license.status == 'additional_info_required' %}bg-orange-500/20 text-orange-400 border border-orange-500/30
+                        {% elif license.status == 'rejected' %}bg-red-500/20 text-red-400 border border-red-500/30
+                        {% elif license.status == 'suspended' %}bg-orange-500/20 text-orange-400 border border-orange-500/30
+                        {% elif license.status == 'revoked' %}bg-red-500/20 text-red-400 border border-red-500/30
+                        {% elif license.status == 'expired' %}bg-slate-500/20 text-slate-400 border border-slate-500/30
+                        {% else %}bg-slate-500/20 text-slate-400 border border-slate-500/30{% endif %}">
+                        {{ license.get_status_display|upper }}
+                    </span>
+                    
+                    {% if is_valid %}
+                    <span class="px-4 py-2 text-sm bg-cyber-lime/20 text-cyber-lime rounded-lg font-mono border border-cyber-lime/30">
+                        ✓ ACTIVE
+                    </span>
+                    {% elif is_expired %}
+                    <span class="px-4 py-2 text-sm bg-red-500/20 text-red-400 rounded-lg font-mono border border-red-500/30">
+                        EXPIRED
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if license.status == 'additional_info_required' and license.additional_info_request %}
+        <div class="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+            <p class="text-orange-400 font-mono text-sm mb-1">⚠️ ADDITIONAL INFORMATION REQUIRED:</p>
+            <p class="text-slate-300 mb-3">{{ license.additional_info_request }}</p>
+            <a href="{% url 'verification:license-edit' license_id=license.id %}" 
+               class="cyber-button px-4 py-2 rounded-lg text-sm inline-block">
+                UPDATE APPLICATION
+            </a>
+        </div>
+        {% endif %}
+
+        {% if license.status == 'rejected' and license.rejection_reason %}
+        <div class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <p class="text-red-400 font-mono text-sm mb-1">✗ REJECTION REASON:</p>
+            <p class="text-slate-300">{{ license.rejection_reason }}</p>
+        </div>
+        {% endif %}
+
+        <!-- License Validity Card (for approved licenses) -->
+        {% if license.status == 'approved' %}
+        <div class="mb-6 glass-effect border {% if is_valid %}border-cyber-lime/30{% else %}border-red-500/30{% endif %} rounded-lg p-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <p class="text-slate-500 font-mono text-xs mb-1">LICENSE NUMBER</p>
+                    <p class="text-cyber-lime font-mono text-lg font-bold">{{ license.license_number }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 font-mono text-xs mb-1">VALID FROM</p>
+                    <p class="text-slate-200 font-mono">{{ license.valid_from|date:"M d, Y" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 font-mono text-xs mb-1">VALID UNTIL</p>
+                    <p class="text-slate-200 font-mono">{{ license.valid_until|date:"M d, Y" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 font-mono text-xs mb-1">DAYS REMAINING</p>
+                    {% if days_until_expiry is not None %}
+                        {% if days_until_expiry < 0 %}
+                        <p class="text-red-400 font-mono font-bold">Expired</p>
+                        {% elif days_until_expiry <= 30 %}
+                        <p class="text-yellow-400 font-mono font-bold">{{ days_until_expiry }} days</p>
+                        {% else %}
+                        <p class="text-cyber-lime font-mono font-bold">{{ days_until_expiry }} days</p>
+                        {% endif %}
+                    {% else %}
+                    <p class="text-slate-400">—</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if license.max_purchase_value %}
+            <div class="mt-4 pt-4 border-t border-slate-700">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">MAX PURCHASE VALUE</p>
+                        <p class="text-slate-200 font-mono">${{ license.max_purchase_value }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">REMAINING VALUE</p>
+                        <p class="text-cyber-lime font-mono font-bold">${{ license.remaining_purchase_value }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Details Sections -->
+        <div class="space-y-6">
+            <!-- Applicant Information -->
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <h2 class="text-xl font-bold text-cyber-lime font-mono mb-4">APPLICANT INFORMATION</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    {% if license.company_name %}
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">COMPANY NAME</p>
+                        <p class="text-slate-200">{{ license.company_name }}</p>
+                    </div>
+                    {% endif %}
+                    {% if license.company_registration_number %}
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">REGISTRATION NUMBER</p>
+                        <p class="text-slate-200">{{ license.company_registration_number }}</p>
+                    </div>
+                    {% endif %}
+                    {% if license.business_type %}
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">BUSINESS TYPE</p>
+                        <p class="text-slate-200">{{ license.business_type }}</p>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">COUNTRY</p>
+                        <p class="text-slate-200">{{ license.country }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">CONTACT PHONE</p>
+                        <p class="text-slate-200">{{ license.contact_phone }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">CONTACT EMAIL</p>
+                        <p class="text-slate-200">{{ license.contact_email }}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <p class="text-slate-500 font-mono text-xs mb-1">ADDRESS</p>
+                        <p class="text-slate-200">{{ license.address }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Purpose & Justification -->
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <h2 class="text-xl font-bold text-cyber-lime font-mono mb-4">PURPOSE & JUSTIFICATION</h2>
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">PURPOSE</p>
+                        <p class="text-slate-200">{{ license.purpose }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">JUSTIFICATION</p>
+                        <p class="text-slate-200">{{ license.justification }}</p>
+                    </div>
+                    {% if license.product_categories %}
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">PRODUCT CATEGORIES</p>
+                        <p class="text-slate-200">{{ license.product_categories }}</p>
+                    </div>
+                    {% endif %}
+                    {% if license.end_use_statement %}
+                    <div>
+                        <p class="text-slate-500 font-mono text-xs mb-1">END-USE STATEMENT</p>
+                        <p class="text-slate-200">{{ license.end_use_statement }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Documents -->
+            {% if license.supporting_document_1 or license.supporting_document_2 or license.supporting_document_3 %}
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <h2 class="text-xl font-bold text-cyber-lime font-mono mb-4">SUPPORTING DOCUMENTS</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {% if license.supporting_document_1 %}
+                    <a href="{{ license.supporting_document_1.url }}" target="_blank"
+                       class="p-4 border border-slate-700 rounded-lg hover:border-cyber-lime/50 transition-colors">
+                        <p class="text-slate-500 font-mono text-xs mb-1">DOCUMENT 1</p>
+                        <p class="text-cyber-lime text-sm">📄 View Document →</p>
+                    </a>
+                    {% endif %}
+                    {% if license.supporting_document_2 %}
+                    <a href="{{ license.supporting_document_2.url }}" target="_blank"
+                       class="p-4 border border-slate-700 rounded-lg hover:border-cyber-lime/50 transition-colors">
+                        <p class="text-slate-500 font-mono text-xs mb-1">DOCUMENT 2</p>
+                        <p class="text-cyber-lime text-sm">📄 View Document →</p>
+                    </a>
+                    {% endif %}
+                    {% if license.supporting_document_3 %}
+                    <a href="{{ license.supporting_document_3.url }}" target="_blank"
+                       class="p-4 border border-slate-700 rounded-lg hover:border-cyber-lime/50 transition-colors">
+                        <p class="text-slate-500 font-mono text-xs mb-1">DOCUMENT 3</p>
+                        <p class="text-cyber-lime text-sm">📄 View Document →</p>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Timeline -->
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <h2 class="text-xl font-bold text-cyber-lime font-mono mb-4">TIMELINE</h2>
+                <div class="space-y-3 text-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 bg-slate-500 rounded-full"></div>
+                        <p class="text-slate-400">Created: {{ license.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    {% if license.submitted_at %}
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <p class="text-slate-400">Submitted: {{ license.submitted_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    {% endif %}
+                    {% if license.reviewed_at %}
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 {% if license.status == 'approved' %}bg-green-500{% elif license.status == 'rejected' %}bg-red-500{% else %}bg-blue-500{% endif %} rounded-full"></div>
+                        <p class="text-slate-400">Reviewed: {{ license.reviewed_at|date:"M d, Y H:i" }}{% if license.reviewed_by %} by {{ license.reviewed_by.username }}{% endif %}</p>
+                    </div>
+                    {% endif %}
+                    {% if license.approved_at %}
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 bg-cyber-lime rounded-full"></div>
+                        <p class="text-slate-400">Approved: {{ license.approved_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-8 flex flex-wrap gap-4 justify-end">
+            {% if license.status == 'draft' %}
+            <a href="{% url 'verification:license-edit' license_id=license.id %}" 
+               class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg font-mono transition-colors">
+                EDIT APPLICATION
+            </a>
+            <a href="{% url 'verification:license-submit' license_id=license.id %}" 
+               class="cyber-button px-6 py-3 rounded-lg font-bold">
+                SUBMIT FOR REVIEW
+            </a>
+            {% elif license.status in 'pending,under_review,additional_info_required' %}
+            {% if license.status == 'additional_info_required' %}
+            <a href="{% url 'verification:license-edit' license_id=license.id %}" 
+               class="cyber-button px-6 py-3 rounded-lg font-bold">
+                UPDATE APPLICATION
+            </a>
+            {% endif %}
+            <a href="{% url 'verification:license-withdraw' license_id=license.id %}" 
+               class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg font-mono transition-colors">
+                WITHDRAW APPLICATION
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

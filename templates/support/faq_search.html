@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search FAQs - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-cyber-lime">Search FAQs</h1>
+                    <p class="text-slate-400 mt-1 font-mono text-sm">
+                        {% if query %}Results for "{{ query }}"{% else %}Search our knowledge base{% endif %}
+                    </p>
+                </div>
+                <a href="{% url 'support:faq-list' %}" class="text-cyber-lime hover:underline font-mono text-sm">
+                    ← All FAQs
+                </a>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="glass-effect cyber-border rounded-lg p-4 mb-6">
+            <form method="get" class="flex gap-4">
+                <input type="text" name="q" value="{{ query }}" placeholder="Search FAQs..."
+                       class="flex-1 px-4 py-2 bg-slate-800/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyber-lime focus:ring-1 focus:ring-cyber-lime focus:outline-none">
+                <button type="submit" class="cyber-button px-6 py-2 rounded-lg">
+                    Search
+                </button>
+            </form>
+        </div>
+
+        <!-- Results -->
+        {% if faqs %}
+        <div class="space-y-4">
+            {% for faq in faqs %}
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <h3 class="text-lg font-bold text-cyber-lime mb-3">{{ faq.question }}</h3>
+                <div class="text-slate-300 whitespace-pre-wrap">{{ faq.answer|truncatechars:300 }}</div>
+                <div class="mt-4 pt-4 border-t border-slate-700">
+                    <a href="{% url 'support:faq-detail' faq.id %}" class="text-cyber-lime hover:underline font-mono text-sm">
+                        Read Full Answer →
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% elif query %}
+        <div class="glass-effect cyber-border rounded-lg p-12 text-center">
+            <div class="text-6xl mb-4">🔍</div>
+            <h3 class="text-xl font-bold text-slate-300 mb-2">No Results Found</h3>
+            <p class="text-slate-500 mb-6">No FAQs match your search for "{{ query }}"</p>
+            <a href="{% url 'support:support-ticket-create' %}" class="cyber-button px-6 py-3 rounded-lg">
+                Submit a Support Ticket
+            </a>
+        </div>
+        {% else %}
+        <div class="glass-effect cyber-border rounded-lg p-12 text-center">
+            <div class="text-6xl mb-4">🔎</div>
+            <h3 class="text-xl font-bold text-slate-300 mb-2">Enter a Search Term</h3>
+            <p class="text-slate-500">Type keywords above to search our FAQ database.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

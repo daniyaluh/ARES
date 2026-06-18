@@ -1,0 +1,181 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Invoice {{ invoice.invoice_number }} - ARES{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-10">
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold text-white">Invoice</h1>
+            <p class="text-linear-text-tertiary text-sm">{{ invoice.invoice_number }}</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'orders:invoice-download' invoice.id %}" class="btn-secondary text-sm">🖨️ Print</a>
+            <a href="{% url 'orders:invoice-list' %}" class="text-linear-purple hover:text-white text-sm">← Back to Invoices</a>
+        </div>
+    </div>
+
+    <!-- Invoice Card -->
+    <div class="card rounded-xl overflow-hidden">
+        <!-- Status Banner -->
+        <div class="px-6 py-4 border-b
+            {% if invoice.status == 'paid' %}bg-linear-green/20 border-linear-green
+            {% elif invoice.status == 'overdue' %}bg-linear-red/20 border-linear-red
+            {% elif invoice.status == 'sent' %}bg-linear-yellow/20 border-linear-yellow
+            {% else %}bg-linear-blue/20 border-linear-blue{% endif %}">
+            <div class="flex items-center justify-between">
+                <span class="font-semibold text-lg
+                    {% if invoice.status == 'paid' %}text-linear-green
+                    {% elif invoice.status == 'overdue' %}text-linear-red
+                    {% elif invoice.status == 'sent' %}text-linear-yellow
+                    {% else %}text-linear-blue{% endif %}">
+                    {{ invoice.get_status_display|upper }}
+                </span>
+                {% if invoice.status == 'overdue' %}
+                <span class="text-linear-red text-sm animate-pulse">⚠️ Payment overdue</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- Company & Customer Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <!-- From (Company) -->
+                <div>
+                    <p class="text-linear-text-tertiary text-xs mb-2">From</p>
+                    <h3 class="text-lg font-semibold text-white">{{ company.name }}</h3>
+                    <p class="text-linear-text-tertiary">{{ company.address }}</p>
+                    <p class="text-linear-text-tertiary">{{ company.city }}, {{ company.state }} {{ company.postal_code }}</p>
+                    <p class="text-linear-text-tertiary">{{ company.country }}</p>
+                    <p class="text-linear-text-tertiary mt-2">{{ company.email }}</p>
+                    <p class="text-linear-text-tertiary">{{ company.phone }}</p>
+                </div>
+
+                <!-- To (Customer) -->
+                <div>
+                    <p class="text-linear-text-tertiary text-xs mb-2">Bill to</p>
+                    <h3 class="text-lg font-semibold text-white">{{ invoice.customer_name }}</h3>
+                    {% if invoice.customer_company %}
+                    <p class="text-linear-text-tertiary">{{ invoice.customer_company }}</p>
+                    {% endif %}
+                    {% if invoice.billing_address %}
+                    <p class="text-linear-text-tertiary">{{ invoice.billing_address }}</p>
+                    <p class="text-linear-text-tertiary">{{ invoice.billing_city }}, {{ invoice.billing_state }} {{ invoice.billing_postal_code }}</p>
+                    <p class="text-linear-text-tertiary">{{ invoice.billing_country }}</p>
+                    {% endif %}
+                    <p class="text-linear-text-tertiary mt-2">{{ invoice.customer_email }}</p>
+                    {% if invoice.customer_phone %}
+                    <p class="text-linear-text-tertiary">{{ invoice.customer_phone }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Invoice Details -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-linear-surface-2 rounded-lg">
+                <div>
+                    <p class="text-linear-text-tertiary text-xs">Invoice #</p>
+                    <p class="text-white font-semibold">{{ invoice.invoice_number }}</p>
+                </div>
+                <div>
+                    <p class="text-linear-text-tertiary text-xs">Issue date</p>
+                    <p class="text-white">{{ invoice.issue_date|date:"F d, Y" }}</p>
+                </div>
+                <div>
+                    <p class="text-linear-text-tertiary text-xs">Due date</p>
+                    <p class="text-white {% if invoice.status == 'overdue' %}text-linear-red{% endif %}">{{ invoice.due_date|date:"F d, Y" }}</p>
+                </div>
+                <div>
+                    <p class="text-linear-text-tertiary text-xs">Payment terms</p>
+                    <p class="text-white">{{ invoice.payment_terms }}</p>
+                </div>
+            </div>
+
+            <!-- Line Items -->
+            <div class="mb-8">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-linear-border">
+                            <th class="py-3 text-left text-xs text-linear-text-tertiary uppercase">Description</th>
+                            <th class="py-3 text-right text-xs text-linear-text-tertiary uppercase">Qty</th>
+                            <th class="py-3 text-right text-xs text-linear-text-tertiary uppercase">Unit Price</th>
+                            <th class="py-3 text-right text-xs text-linear-text-tertiary uppercase">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr class="border-b border-linear-border/50">
+                            <td class="py-4">
+                                <p class="text-white">{{ item.description }}</p>
+                                {% if item.sku %}
+                                <p class="text-linear-text-tertiary text-xs">SKU: {{ item.sku }}</p>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 text-right text-white">{{ item.quantity }}</td>
+                            <td class="py-4 text-right text-white">${{ item.unit_price }}</td>
+                            <td class="py-4 text-right text-white font-semibold">${{ item.line_total }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="py-4 text-center text-linear-text-tertiary">No line items</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totals -->
+            <div class="flex justify-end">
+                <div class="w-full md:w-1/2">
+                    <div class="space-y-2">
+                        <div class="flex justify-between py-2">
+                            <span class="text-linear-text-tertiary">Subtotal</span>
+                            <span class="text-white">${{ invoice.subtotal }}</span>
+                        </div>
+                        {% if invoice.tax_rate > 0 %}
+                        <div class="flex justify-between py-2">
+                            <span class="text-linear-text-tertiary">Tax ({{ invoice.tax_rate }}%)</span>
+                            <span class="text-white">${{ invoice.tax_amount }}</span>
+                        </div>
+                        {% endif %}
+                        {% if invoice.shipping_cost > 0 %}
+                        <div class="flex justify-between py-2">
+                            <span class="text-linear-text-tertiary">Shipping</span>
+                            <span class="text-white">${{ invoice.shipping_cost }}</span>
+                        </div>
+                        {% endif %}
+                        {% if invoice.discount_amount > 0 %}
+                        <div class="flex justify-between py-2">
+                            <span class="text-linear-text-tertiary">Discount</span>
+                            <span class="text-linear-green">-${{ invoice.discount_amount }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="flex justify-between py-3 border-t border-linear-border mt-2">
+                            <span class="text-lg font-semibold text-white">Total Due</span>
+                            <span class="text-2xl font-bold text-linear-purple">${{ invoice.total_amount }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            {% if invoice.notes %}
+            <div class="mt-8 p-4 bg-linear-surface-2 rounded-lg">
+                <p class="text-linear-text-tertiary text-xs mb-2">Notes</p>
+                <p class="text-linear-text-tertiary">{{ invoice.notes }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Related Purchase Request -->
+            {% if invoice.purchase_request %}
+            <div class="mt-8 p-4 bg-linear-surface-2 rounded-lg">
+                <p class="text-linear-text-tertiary text-xs mb-2">Related purchase request</p>
+                <a href="{% url 'orders:purchase-request-detail' invoice.purchase_request.id %}" class="text-linear-purple hover:text-white">View Purchase Request →</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

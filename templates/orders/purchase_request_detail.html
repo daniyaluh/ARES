@@ -1,0 +1,164 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Purchase Request Details - ARES{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-10">
+    <div class="card p-8">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-semibold text-white">Purchase Request</h1>
+            <span class="px-3 py-1 rounded text-sm font-semibold
+                {% if request.status == 'approved' %}bg-linear-green/20 text-linear-green
+                {% elif request.status == 'rejected' %}bg-linear-red/20 text-linear-red
+                {% elif request.status == 'cancelled' %}bg-linear-surface-2/20 text-linear-text-tertiary
+                {% else %}bg-linear-yellow/20 text-linear-yellow{% endif %}">
+                {{ request.get_status_display|upper|default:"PENDING" }}
+            </span>
+        </div>
+
+        <div class="space-y-6">
+            {% if request.product %}
+            <div class="card p-6">
+                <h3 class="text-linear-purple font-semibold mb-4">Product Details</h3>
+                <h4 class="text-lg font-semibold text-white mb-2">{{ request.product.title }}</h4>
+                <p class="text-linear-text-tertiary mb-4">{{ request.product.description|truncatewords:50 }}</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-linear-text-tertiary text-sm">Quantity:</p>
+                        <p class="text-linear-purple font-semibold text-lg">{{ request.quantity }}</p>
+                    </div>
+                    <div>
+                        <p class="text-linear-text-tertiary text-sm">Price:</p>
+                        <p class="text-linear-purple font-semibold text-lg">${{ request.product.price }}</p>
+                    </div>
+                </div>
+                {% if request.product.robot %}
+                <div class="mt-4 pt-4 border-t border-linear-border">
+                    <a href="{% url 'verification:robot-detail' request.product.robot.id %}" class="text-linear-purple hover:text-white text-sm">View Product Details →</a>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="card p-6">
+                <h3 class="text-linear-purple font-semibold mb-4">Request Information</h3>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-linear-text-tertiary text-sm">Request ID:</p>
+                        <p class="text-white text-sm">{{ request.id }}</p>
+                    </div>
+                    <div>
+                        <p class="text-linear-text-tertiary text-sm">Submitted:</p>
+                        <p class="text-white text-sm">{{ request.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    {% if request.updated_at != request.created_at %}
+                    <div>
+                        <p class="text-linear-text-tertiary text-sm">Last Updated:</p>
+                        <p class="text-white text-sm">{{ request.updated_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    {% endif %}
+                    {% if request.notes %}
+                    <div>
+                        <p class="text-linear-text-tertiary text-sm">Notes:</p>
+                        <p class="text-white">{{ request.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if request.status == 'pending' %}
+            <div class="bg-linear-yellow/20 border border-linear-yellow rounded-xl p-4">
+                <p class="text-linear-yellow text-sm">⏳ Your purchase request is pending review. You will be notified once it's processed.</p>
+            </div>
+            {% elif request.status == 'under_review' %}
+            <div class="bg-linear-blue/20 border border-linear-blue rounded-xl p-4">
+                <p class="text-linear-blue text-sm">🔍 Your purchase request is currently under review.</p>
+            </div>
+            {% elif request.status == 'approved' %}
+            <div class="bg-linear-green/20 border border-linear-green rounded-xl p-4">
+                <p class="text-linear-green text-sm mb-2">✓ Your purchase request has been approved!</p>
+                {% if request.review_notes %}
+                <p class="text-linear-text-tertiary text-sm">Notes: {{ request.review_notes }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Invoice Section for Approved Requests -->
+            {% if invoice %}
+            <div class="card p-6 mt-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-linear-purple font-semibold">📄 Invoice</h3>
+                    <span class="px-2 py-1 text-xs rounded font-semibold
+                        {% if invoice.status == 'paid' %}bg-linear-green/20 text-linear-green
+                        {% elif invoice.status == 'overdue' %}bg-linear-red/20 text-linear-red
+                        {% elif invoice.status == 'sent' %}bg-linear-yellow/20 text-linear-yellow
+                        {% else %}bg-linear-blue/20 text-linear-blue{% endif %}">
+                        {{ invoice.get_status_display|upper }}
+                    </span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <p class="text-linear-text-tertiary text-sm">Invoice Number:</p>
+                        <p class="text-linear-purple font-semibold">{{ invoice.invoice_number }}</p>
+                    </div>
+                    <div>
+                        <p class="text-linear-text-tertiary text-sm">Total Amount:</p>
+                        <p class="text-linear-purple font-semibold text-xl">${{ invoice.total_amount }}</p>
+                    </div>
+                    <div>
+                        <p class="text-linear-text-tertiary text-sm">Issue Date:</p>
+                        <p class="text-white text-sm">{{ invoice.issue_date|date:"M d, Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-linear-text-tertiary text-sm">Due Date:</p>
+                        <p class="text-white text-sm {% if invoice.status == 'overdue' %}text-linear-red{% endif %}">{{ invoice.due_date|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'orders:invoice-detail' invoice.id %}" class="btn-secondary text-sm">View Invoice</a>
+                    <a href="{% url 'orders:invoice-download' invoice.id %}" class="btn-secondary text-sm">🖨️ Print</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="bg-linear-surface-2 border border-linear-border rounded-xl p-4 mt-4">
+                <p class="text-linear-text-tertiary text-sm mb-3">ℹ️ This request was approved before the invoice system was implemented. No invoice is available.</p>
+                {% if user.is_staff or user.is_superuser %}
+                <a href="{% url 'orders:generate-invoice-for-request' request.id %}" class="btn-secondary text-sm">🧾 Generate Invoice Now</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% elif request.status == 'rejected' %}
+            <div class="bg-linear-red/20 border border-linear-red rounded-xl p-4">
+                <p class="text-linear-red text-sm mb-2">✗ Your purchase request has been rejected.</p>
+                {% if request.rejection_reason %}
+                <p class="text-linear-text-tertiary text-sm">Reason: {{ request.rejection_reason }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-8 flex flex-wrap items-center gap-4">
+            <a href="{% url 'orders:purchase-request-list' %}" class="btn-secondary inline-block text-sm">← Back to Requests</a>
+            {% if request.status == 'pending' or request.status == 'under_review' %}
+            <form method="post" action="{% url 'orders:purchase-request-cancel' request.id %}" class="inline-block">
+                {% csrf_token %}
+                <button type="submit" onclick="return confirm('Are you sure you want to cancel this purchase request?');" class="btn-secondary text-sm">Cancel Request</button>
+            </form>
+            {% endif %}
+
+            <!-- Purchase Again button for completed requests -->
+            {% if request.product and request.product.status == 'active' %}
+            {% if request.status == 'approved' or request.status == 'rejected' or request.status == 'cancelled' %}
+            <a href="{% url 'orders:purchase-request-create' %}?product_id={{ request.product.id }}" class="btn-secondary text-sm">🔄 Purchase Again</a>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+

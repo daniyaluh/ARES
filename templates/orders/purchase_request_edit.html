@@ -1,0 +1,39 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Purchase Request - ARES{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto px-6 py-10">
+    <div class="card p-8">
+        <h1 class="text-2xl font-semibold text-white mb-4">Edit Purchase Request</h1>
+        {% if request.product %}
+        <div class="mb-6">
+            <h3 class="text-linear-purple font-semibold mb-2">Product:</h3>
+            <p class="text-white">{{ request.product.title }}</p>
+        </div>
+        {% endif %}
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-linear-text-tertiary text-sm mb-2">Notes (Optional)</label>
+                <textarea name="notes" rows="4" class="w-full bg-linear-surface-2 border border-linear-border rounded-xl p-3 text-white text-sm focus:border-linear-purple focus:outline-none">{{ request.notes }}</textarea>
+            </div>
+            <div class="flex items-center gap-4">
+                <button type="submit" class="btn-secondary px-6 py-3 text-sm font-semibold">Update Request</button>
+                <a href="{% url 'orders:purchase-request-detail' request.id %}" class="btn-secondary text-sm">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+

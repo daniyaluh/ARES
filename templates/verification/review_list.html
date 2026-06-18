@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review Verification Requests - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold text-cyber-lime mb-2">VERIFICATION REVIEW QUEUE</h1>
+                <p class="text-slate-400 font-mono text-sm">Review pending verification requests</p>
+            </div>
+            <a href="{% url 'users:staff-dashboard' %}" class="text-slate-400 hover:text-cyber-lime font-mono flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        {% if verification_requests %}
+        <div class="space-y-4">
+            {% for req in verification_requests %}
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-cyber-lime mb-1">{{ req.user.username }} ({{ req.user.email }})</h3>
+                        <p class="text-slate-400 text-sm font-mono">Requested: {{ req.requested_clearance.name }}</p>
+                        <p class="text-slate-500 text-xs font-mono mt-1">Submitted: {{ req.submitted_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <div class="ml-4">
+                        <span class="px-3 py-1 rounded text-sm font-mono
+                            {% if req.status == 'approved' %}bg-cyber-lime/20 text-cyber-lime
+                            {% elif req.status == 'rejected' %}bg-red-500/20 text-red-400
+                            {% else %}bg-yellow-500/20 text-yellow-400{% endif %}">
+                            {{ req.get_status_display|upper }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <p class="text-slate-300 text-sm mb-2">{{ req.reason|truncatewords:30 }}</p>
+                    {% if req.identity_documents.exists %}
+                    <p class="text-cyber-lime text-xs font-mono">✓ ID Documents Submitted ({{ req.identity_documents.count }})</p>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <a href="{% url 'verification:review-detail' req.id %}" class="cyber-button px-4 py-2 rounded-lg inline-block">
+                        Review Request →
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if verification_requests.has_other_pages %}
+        <div class="mt-8 flex justify-center space-x-2">
+            {% if verification_requests.has_previous %}
+            <a href="?page={{ verification_requests.previous_page_number }}" class="cyber-button px-4 py-2 rounded-lg">
+                ← Previous
+            </a>
+            {% endif %}
+            <span class="px-4 py-2 text-slate-300 font-mono">
+                Page {{ verification_requests.number }} of {{ verification_requests.paginator.num_pages }}
+            </span>
+            {% if verification_requests.has_next %}
+            <a href="?page={{ verification_requests.next_page_number }}" class="cyber-button px-4 py-2 rounded-lg">
+                Next →
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="glass-effect cyber-border rounded-lg p-12 text-center">
+            <p class="text-slate-400 font-mono text-lg mb-4">No pending verification requests.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+

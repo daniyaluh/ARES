@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review Verification Request - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-effect cyber-border rounded-lg p-8">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-4xl font-bold text-cyber-lime">REVIEW VERIFICATION REQUEST</h1>
+                <span class="px-3 py-1 rounded text-sm font-mono
+                    {% if verification_request.status == 'approved' %}bg-cyber-lime/20 text-cyber-lime
+                    {% elif verification_request.status == 'rejected' %}bg-red-500/20 text-red-400
+                    {% else %}bg-yellow-500/20 text-yellow-400{% endif %}">
+                    {{ verification_request.get_status_display|upper }}
+                </span>
+            </div>
+
+            <!-- User Information -->
+            <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+                <h3 class="text-cyber-lime font-bold mb-4">USER INFORMATION</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-slate-400 text-sm">Username:</p>
+                        <p class="text-slate-300 font-mono">{{ verification_request.user.username }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-sm">Email:</p>
+                        <p class="text-slate-300 font-mono">{{ verification_request.user.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-sm">Requested Clearance:</p>
+                        <p class="text-slate-300 font-mono">{{ verification_request.requested_clearance.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-sm">Submitted:</p>
+                        <p class="text-slate-300 font-mono">{{ verification_request.submitted_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Request Details -->
+            <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+                <h3 class="text-cyber-lime font-bold mb-4">REQUEST DETAILS</h3>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-slate-400 text-sm mb-1">Reason:</p>
+                        <p class="text-slate-300">{{ verification_request.reason }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-sm mb-1">Intended Use:</p>
+                        <p class="text-slate-300">{{ verification_request.intended_use }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identity Documents with Images -->
+            {% if identity_documents %}
+            <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+                <h3 class="text-cyber-lime font-bold mb-4">IDENTITY DOCUMENTS</h3>
+                {% for doc in identity_documents %}
+                <div class="mb-6 pb-6 {% if not forloop.last %}border-b border-slate-700{% endif %}">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-slate-400 text-sm mb-1">Document Type:</p>
+                            <p class="text-slate-300 font-mono">{{ doc.get_document_type_display }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-sm mb-1">Document Number:</p>
+                            <p class="text-slate-300 font-mono">{{ doc.document_number }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-sm mb-1">Issuing Country:</p>
+                            <p class="text-slate-300 font-mono">{{ doc.issuing_country }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-sm mb-1">Issuing Authority:</p>
+                            <p class="text-slate-300 font-mono">{{ doc.issuing_authority|default:"N/A" }}</p>
+                        </div>
+                        {% if doc.issue_date %}
+                        <div>
+                            <p class="text-slate-400 text-sm mb-1">Issue Date:</p>
+                            <p class="text-slate-300 font-mono">{{ doc.issue_date|date:"M d, Y" }}</p>
+                        </div>
+                        {% endif %}
+                        {% if doc.expiry_date %}
+                        <div>
+                            <p class="text-slate-400 text-sm mb-1">Expiry Date:</p>
+                            <p class="text-slate-300 font-mono">{{ doc.expiry_date|date:"M d, Y" }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ID Card Images -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        {% if doc.front_image %}
+                        <div>
+                            <p class="text-cyber-lime font-bold mb-2 font-mono text-sm">FRONT IMAGE</p>
+                            <div class="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                                <img src="{{ doc.front_image.url }}" 
+                                     alt="ID Front" 
+                                     class="w-full h-auto rounded-lg border border-cyber-lime/30 shadow-lg">
+                                <a href="{{ doc.front_image.url }}" 
+                                   target="_blank" 
+                                   class="mt-2 inline-block text-cyber-lime hover:underline font-mono text-xs">
+                                    View Full Size →
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if doc.back_image %}
+                        <div>
+                            <p class="text-cyber-lime font-bold mb-2 font-mono text-sm">BACK IMAGE</p>
+                            <div class="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                                <img src="{{ doc.back_image.url }}" 
+                                     alt="ID Back" 
+                                     class="w-full h-auto rounded-lg border border-cyber-lime/30 shadow-lg">
+                                <a href="{{ doc.back_image.url }}" 
+                                   target="_blank" 
+                                   class="mt-2 inline-block text-cyber-lime hover:underline font-mono text-xs">
+                                    View Full Size →
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if doc.verification_notes %}
+                    <div class="mt-4">
+                        <p class="text-slate-400 text-sm mb-1">Verification Notes:</p>
+                        <p class="text-slate-300 text-sm">{{ doc.verification_notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Certifications -->
+            {% if certifications %}
+            <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+                <h3 class="text-cyber-lime font-bold mb-4">CERTIFICATIONS</h3>
+                {% for cert in certifications %}
+                <div class="mb-4 {% if not forloop.last %}border-b border-slate-700 pb-4{% endif %}">
+                    <p class="text-slate-300 font-mono"><strong>{{ cert.get_certification_type_display }}</strong> - {{ cert.issuing_organization }}</p>
+                    <p class="text-slate-400 text-sm">Number: {{ cert.certification_number }}</p>
+                    {% if cert.certificate_file %}
+                    <a href="{{ cert.certificate_file.url }}" target="_blank" class="text-cyber-lime hover:underline text-sm font-mono">
+                        View Certificate File →
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Military Affiliation -->
+            {% if military_affiliation %}
+            <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+                <h3 class="text-cyber-lime font-bold mb-4">MILITARY AFFILIATION</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-slate-400 text-sm">Branch:</p>
+                        <p class="text-slate-300 font-mono">{{ military_affiliation.get_branch_display }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-sm">Rank:</p>
+                        <p class="text-slate-300 font-mono">{{ military_affiliation.rank_title|default:"N/A" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-sm">Service Number:</p>
+                        <p class="text-slate-300 font-mono">{{ military_affiliation.service_number|default:"N/A" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-sm">Status:</p>
+                        <p class="text-slate-300 font-mono">
+                            {% if military_affiliation.is_active_duty %}Active Duty
+                            {% elif military_affiliation.is_veteran %}Veteran
+                            {% elif military_affiliation.is_reservist %}Reservist
+                            {% elif military_affiliation.is_contractor %}Contractor
+                            {% else %}N/A{% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Review Actions -->
+            {% if verification_request.status in 'pending,under_review' %}
+            <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+                <h3 class="text-cyber-lime font-bold mb-4">REVIEW ACTIONS</h3>
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label class="block text-cyber-lime font-mono text-sm mb-2">Clearance Level</label>
+                        <select name="clearance_level" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-slate-300 font-mono focus:border-cyber-lime focus:outline-none">
+                            <option value="">Select clearance level...</option>
+                            {% for clearance in clearance_levels %}
+                            <option value="{{ clearance.id }}">{{ clearance.name }} ({{ clearance.code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-cyber-lime font-mono text-sm mb-2">Review Notes</label>
+                        <textarea name="notes" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-slate-300 font-mono focus:border-cyber-lime focus:outline-none" placeholder="Add review notes..."></textarea>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        <button type="submit" name="action" value="approve" class="cyber-button px-6 py-3 rounded-lg font-bold">
+                            APPROVE REQUEST
+                        </button>
+                        <button type="submit" name="action" value="reject" class="px-6 py-3 bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg hover:bg-red-500/30 transition-colors font-bold">
+                            REJECT REQUEST
+                        </button>
+                    </div>
+
+                    {% if request.method == 'POST' and request.POST.action == 'reject' %}
+                    <div>
+                        <label class="block text-cyber-lime font-mono text-sm mb-2">Rejection Reason</label>
+                        <textarea name="rejection_reason" rows="3" required class="w-full bg-slate-800 border border-red-500/50 rounded-lg p-3 text-slate-300 font-mono focus:border-red-500 focus:outline-none" placeholder="Provide reason for rejection..."></textarea>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Action History -->
+            {% if logs %}
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <h3 class="text-cyber-lime font-bold mb-4">ACTION HISTORY</h3>
+                <div class="space-y-2">
+                    {% for log in logs %}
+                    <div class="flex items-start space-x-3 text-sm">
+                        <span class="text-slate-500 font-mono">{{ log.created_at|date:"M d, Y H:i" }}</span>
+                        <span class="text-slate-300">{{ log.get_action_type_display }}</span>
+                        {% if log.description %}
+                        <span class="text-slate-400">- {{ log.description }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="mt-8">
+                <a href="{% url 'verification:review-list' %}" class="cyber-button px-4 py-2 rounded-lg inline-block">
+                    ← Back to Review List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+

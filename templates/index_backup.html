@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ARES - Dashboard{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate">
+    <!-- Hero Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="text-center mb-12">
+            <h1 class="text-5xl md:text-6xl font-bold text-cyber-lime mb-4 text-cyber-glow">
+                AUTONOMOUS ROBOTICS
+            </h1>
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-300 mb-6">
+                ENTERPRISE SYSTEM
+            </h2>
+            <p class="text-lg text-slate-400 max-w-2xl mx-auto font-mono">
+                From consumer drones to military-grade autonomous systems. 
+                Secure marketplace for next-generation robotics.
+            </p>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm font-mono uppercase">Total Robots</p>
+                        <p class="text-3xl font-bold text-cyber-lime mt-2">1,247</p>
+                    </div>
+                    <div class="w-12 h-12 bg-cyber-lime/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm font-mono uppercase">Active Users</p>
+                        <p class="text-3xl font-bold text-cyber-lime mt-2">8,429</p>
+                    </div>
+                    <div class="w-12 h-12 bg-cyber-lime/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm font-mono uppercase">Orders</p>
+                        <p class="text-3xl font-bold text-cyber-lime mt-2">3,156</p>
+                    </div>
+                    <div class="w-12 h-12 bg-cyber-lime/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm font-mono uppercase">System Status</p>
+                        <p class="text-xl font-bold text-cyber-lime mt-2 flex items-center">
+                            <span class="status-indicator status-online mr-2"></span>
+                            ONLINE
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-cyber-lime/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Categories Preview -->
+        <div class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-bold text-cyber-lime font-mono">BROWSE BY CATEGORY</h2>
+                <a href="{% url 'products:category-browse' %}" class="text-cyber-lime hover:text-cyber-lime/80 font-mono text-sm">
+                    VIEW ALL CATEGORIES →
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                {% for category in main_categories %}
+                <a href="{% url 'verification:robot-list' %}?category={{ category.id }}" 
+                   class="glass-effect cyber-border rounded-lg p-4 hover:border-cyber-lime/50 transition-all duration-300 group text-center">
+                    <div class="mb-2">
+                        <div class="w-12 h-12 bg-cyber-lime/20 rounded-lg flex items-center justify-center mx-auto group-hover:bg-cyber-lime/30 transition-colors">
+                            <svg class="w-6 h-6 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="text-sm font-bold text-cyber-lime font-mono group-hover:text-cyber-lime/80">{{ category.name|upper }}</h3>
+                    {% if category.subcategories.all %}
+                    <p class="text-xs text-slate-400 mt-1">{{ category.subcategories.count }} subcategories</p>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <a href="{% url 'verification:robot-list' %}" class="glass-effect cyber-border rounded-lg p-8 hover:border-cyber-lime/50 transition-all duration-300 group">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="w-16 h-16 bg-cyber-lime/20 rounded-lg flex items-center justify-center group-hover:bg-cyber-lime/30 transition-colors">
+                        <svg class="w-8 h-8 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-cyber-lime">Browse Robots</h3>
+                </div>
+                <p class="text-slate-400 font-mono text-sm">
+                    Explore our catalog of autonomous systems
+                </p>
+            </a>
+            
+            <a href="{% url 'verification:military-robots-list' %}" class="glass-effect cyber-border rounded-lg p-8 hover:border-cyber-lime/50 transition-all duration-300 group border-red-500/30">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="w-16 h-16 bg-red-500/20 rounded-lg flex items-center justify-center group-hover:bg-red-500/30 transition-colors">
+                        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-red-400">Military-Grade</h3>
+                </div>
+                <p class="text-slate-400 font-mono text-sm">
+                    Access restricted autonomous systems (Clearance Required)
+                </p>
+            </a>
+            
+            <a href="{% url 'verification:request' %}" class="glass-effect cyber-border rounded-lg p-8 hover:border-cyber-lime/50 transition-all duration-300 group">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="w-16 h-16 bg-cyber-lime/20 rounded-lg flex items-center justify-center group-hover:bg-cyber-lime/30 transition-colors">
+                        <svg class="w-8 h-8 text-cyber-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-cyber-lime">Get Verified</h3>
+                </div>
+                <p class="text-slate-400 font-mono text-sm">
+                    Request verification for restricted products
+                </p>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

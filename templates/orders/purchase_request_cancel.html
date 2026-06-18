@@ -1,0 +1,42 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cancel Purchase Request - ARES{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto px-6 py-10">
+    <div class="card p-8">
+        <h1 class="text-2xl font-semibold text-linear-red mb-4">Cancel Purchase Request</h1>
+        <div class="bg-linear-red/20 border border-linear-red rounded-xl p-4 mb-6">
+            <p class="text-linear-red text-sm">⚠️ Are you sure you want to cancel this purchase request?</p>
+            <p class="text-linear-text-tertiary text-sm mt-2">This action cannot be undone.</p>
+        </div>
+        {% if request.product %}
+        <div class="card p-6 mb-6">
+            <h3 class="text-linear-purple font-semibold mb-2">Request Details</h3>
+            <p class="text-white mb-2"><strong>Product:</strong> {{ request.product.title }}</p>
+            <p class="text-white mb-2"><strong>Quantity:</strong> {{ request.quantity }}</p>
+            <p class="text-white"><strong>Status:</strong> {{ request.get_status_display|default:"PENDING" }}</p>
+            <p class="text-white mt-2"><strong>Submitted:</strong> {{ request.created_at|date:"M d, Y H:i" }}</p>
+        </div>
+        {% endif %}
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div class="flex items-center gap-4">
+                <button type="submit" class="btn-secondary text-linear-red px-6 py-3 text-sm font-semibold">Confirm Cancellation</button>
+                <a href="{% url 'orders:purchase-request-detail' request.id %}" class="btn-secondary text-sm">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+

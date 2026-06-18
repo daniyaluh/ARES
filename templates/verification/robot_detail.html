@@ -1,0 +1,868 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ robot.product.title }} - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="glass-effect cyber-border rounded-lg p-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Product Gallery -->
+                <div>
+                    {% if gallery %}
+                    <div class="mb-4">
+                        {% for item in gallery|slice:":1" %}
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.alt_text|default:product.title }}" 
+                             class="w-full h-auto rounded-lg border border-cyber-lime/30 shadow-lg">
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% if gallery|length > 1 %}
+                    <div class="grid grid-cols-4 gap-2">
+                        {% for item in gallery|slice:"1:5" %}
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.alt_text|default:product.title }}"
+                             class="w-full h-20 object-cover rounded border border-slate-700 hover:border-cyber-lime/50 cursor-pointer">
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="bg-slate-800 rounded-lg border border-slate-700 p-16 text-center">
+                        <p class="text-slate-500 font-mono">No images available</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Product Info -->
+                <div>
+                    <div class="flex items-center gap-4 mb-4">
+                        <h1 class="text-4xl font-bold text-cyber-lime">{{ robot.product.title }}</h1>
+                        {% if robot.display_tag != 'none' %}
+                            {% with tag_info=robot.display_tag_info %}
+                            <span class="px-3 py-1 text-sm {{ tag_info.bg_class }} {{ tag_info.text_class }} rounded font-mono flex items-center gap-1">
+                                <span>{{ tag_info.icon }}</span>
+                                {{ tag_info.label }}
+                            </span>
+                            {% endwith %}
+                        {% endif %}
+                    </div>
+                    <p class="text-slate-400 mb-6">{{ robot.product.description }}</p>
+                    
+                    <div class="mb-6">
+                        <p class="text-5xl font-bold text-cyber-lime mb-2">${{ robot.product.price }}</p>
+                        {% if product.rating_average %}
+                        <div class="flex items-center space-x-2">
+                            <span class="text-yellow-400">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= product.rating_average|floatformat:0|add:"0" %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="text-slate-400 text-sm font-mono">
+                                ({{ product.rating_average }}/5.0 - {{ product.rating_count }} reviews)
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Basic Robot Info -->
+                    <div class="glass-effect cyber-border rounded-lg p-4 mb-4">
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">QUICK SPECS</h3>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <p class="text-slate-400 font-mono text-xs">Type</p>
+                                <p class="text-slate-300 font-mono">{{ robot.get_robot_type_display }}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400 font-mono text-xs">Manufacturer</p>
+                                <p class="text-slate-300 font-mono">{{ robot.manufacturer }}</p>
+                            </div>
+                            {% if robot.model_number %}
+                            <div>
+                                <p class="text-slate-400 font-mono text-xs">Model</p>
+                                <p class="text-slate-300 font-mono">{{ robot.model_number }}</p>
+                            </div>
+                            {% endif %}
+                            {% if robot.year_manufactured %}
+                            <div>
+                                <p class="text-slate-400 font-mono text-xs">Year</p>
+                                <p class="text-slate-300 font-mono">{{ robot.year_manufactured }}</p>
+                            </div>
+                            {% endif %}
+                            {% if robot.weight_kg %}
+                            <div>
+                                <p class="text-slate-400 font-mono text-xs">Weight</p>
+                                <p class="text-slate-300 font-mono">{{ robot.weight_kg }} kg</p>
+                            </div>
+                            {% endif %}
+                            {% if robot.max_speed_kmh %}
+                            <div>
+                                <p class="text-slate-400 font-mono text-xs">Max Speed</p>
+                                <p class="text-slate-300 font-mono">{{ robot.max_speed_kmh }} km/h</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Purchase Section -->
+                    
+                    <!-- License Requirement Notice -->
+                    {% if requires_license %}
+                    <div class="mb-4 p-4 {{ license_info.bg_class }} border {{ license_info.bg_class|cut:'20'|add:'50' }} rounded-lg">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-lg">📋</span>
+                            <p class="{{ license_info.text_class }} font-mono text-sm font-bold">{{ license_info.short_label }}</p>
+                        </div>
+                        <p class="text-slate-300 text-sm mb-3">{{ license_info.description }}</p>
+                        
+                        {% if request.user.is_authenticated %}
+                            {% if has_valid_license %}
+                            <div class="flex items-center gap-2 text-cyber-lime text-sm font-mono">
+                                <span>✓</span>
+                                <span>You have a valid license for this product</span>
+                            </div>
+                            {% else %}
+                            <a href="{% url 'verification:license-apply' %}" class="inline-flex items-center gap-2 {{ license_info.text_class }} hover:underline text-sm font-mono">
+                                Apply for License →
+                            </a>
+                            {% endif %}
+                        {% else %}
+                        <a href="{% url 'users:login' %}" class="inline-flex items-center gap-2 {{ license_info.text_class }} hover:underline text-sm font-mono">
+                            Login to Apply for License →
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if robot.requires_verification or robot.is_restricted %}
+                        {% if request.user.is_authenticated %}
+                            {% if can_access %}
+                            <div class="bg-cyber-lime/20 border border-cyber-lime/50 rounded-lg p-4 mb-4">
+                                <p class="text-cyber-lime font-mono mb-2 text-sm">✓ You have clearance to access this product</p>
+                                {% if user_clearance %}
+                                <p class="text-slate-300 text-xs mb-4 font-mono">Clearance Level: {{ user_clearance.name }}</p>
+                                {% endif %}
+                                
+                                {% if requires_license and not has_valid_license %}
+                                <!-- Has clearance but needs license -->
+                                <div class="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                                    <p class="text-yellow-400 font-mono text-sm">⚠️ You have clearance but still need an approved {{ license_info.short_label }} to purchase.</p>
+                                    <a href="{% url 'verification:license-apply' %}" class="text-yellow-400 hover:underline mt-1 inline-block text-sm font-mono">Apply for License →</a>
+                                </div>
+                                {% else %}
+                                <form method="post" action="{% url 'orders:purchase-request-create' %}" class="mt-4">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="product_id" value="{{ robot.product.id }}">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="cyber-button px-6 py-3 rounded-lg font-bold w-full">
+                                        REQUEST PURCHASE
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-4">
+                                <p class="text-red-400 font-mono text-sm">⚠️ {{ access_reason|default:"This robot requires verification clearance" }}</p>
+                                <a href="{% url 'verification:request' %}" class="text-cyber-lime hover:underline mt-2 inline-block text-sm font-mono">Request Verification →</a>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                        <div class="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-4">
+                            <p class="text-red-400 font-mono text-sm">⚠️ This robot requires verification clearance</p>
+                            <a href="{% url 'users:login' %}" class="text-cyber-lime hover:underline mt-2 inline-block text-sm font-mono">Login to Request Verification →</a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                    {% if request.user.is_authenticated %}
+                    
+                    {% if requires_license and not has_valid_license %}
+                    <!-- No clearance needed but license required -->
+                    <div class="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4 mb-4">
+                        <p class="text-yellow-400 font-mono text-sm">⚠️ You need an approved {{ license_info.short_label }} to purchase this product.</p>
+                        <a href="{% url 'verification:license-apply' %}" class="text-cyber-lime hover:underline mt-2 inline-block text-sm font-mono">Apply for License →</a>
+                    </div>
+                    {% else %}
+                    <form method="post" action="{% url 'orders:purchase-request-create' %}" class="mb-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ robot.product.id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="cyber-button px-6 py-3 rounded-lg font-bold w-full">
+                            REQUEST PURCHASE
+                        </button>
+                    </form>
+                    {% endif %}
+                            REQUEST PURCHASE
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'users:login' %}" class="cyber-button px-6 py-3 rounded-lg font-bold inline-block w-full text-center">
+                        LOGIN TO PURCHASE
+                    </a>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Specifications Tabs/Sections -->
+        <div class="space-y-8">
+            <!-- Technical Specifications -->
+            {% if specifications %}
+            <div class="glass-effect cyber-border rounded-lg p-8">
+                <h2 class="text-3xl font-bold text-cyber-lime mb-6 font-mono">TECHNICAL SPECIFICATIONS</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Processing & Computing -->
+                    {% if specifications.cpu_model or specifications.ram_gb or specifications.storage_gb or specifications.gpu_model %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">PROCESSING</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if specifications.cpu_model %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">CPU:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.cpu_model }}{% if specifications.cpu_cores %} ({{ specifications.cpu_cores }} cores){% endif %}</span>
+                            </div>
+                            {% endif %}
+                            {% if specifications.ram_gb %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">RAM:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.ram_gb }} GB</span>
+                            </div>
+                            {% endif %}
+                            {% if specifications.storage_gb %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Storage:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.storage_gb }} GB</span>
+                            </div>
+                            {% endif %}
+                            {% if specifications.gpu_model %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">GPU:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.gpu_model }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Sensors -->
+                    {% if specifications.camera_resolution or specifications.lidar_enabled or specifications.radar_enabled or specifications.gps_enabled or specifications.sensor_list %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">SENSORS</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if specifications.camera_resolution %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Camera:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.camera_resolution }}{% if specifications.camera_count > 1 %} ({{ specifications.camera_count }} cameras){% endif %}</span>
+                            </div>
+                            {% endif %}
+                            {% if specifications.lidar_enabled %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ LiDAR Enabled</span></div>
+                            {% endif %}
+                            {% if specifications.radar_enabled %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Radar Enabled</span></div>
+                            {% endif %}
+                            {% if specifications.gps_enabled %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ GPS Enabled</span></div>
+                            {% endif %}
+                            {% if specifications.imu_enabled %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ IMU Enabled</span></div>
+                            {% endif %}
+                            {% if specifications.sensor_list %}
+                            <div class="mt-2">
+                                <span class="text-slate-400 font-mono text-xs">Additional:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.sensor_list|join:", " }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Communication -->
+                    {% if specifications.wifi_standard or specifications.bluetooth_version or specifications.cellular_support or specifications.communication_protocols %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">COMMUNICATION</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if specifications.wifi_standard %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">WiFi:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.wifi_standard }}</span>
+                            </div>
+                            {% endif %}
+                            {% if specifications.bluetooth_version %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Bluetooth:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.bluetooth_version }}</span>
+                            </div>
+                            {% endif %}
+                            {% if specifications.cellular_support %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Cellular Support</span></div>
+                            {% endif %}
+                            {% if specifications.communication_protocols %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Protocols:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.communication_protocols|join:", " }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Software -->
+                    {% if specifications.operating_system or specifications.firmware_version or specifications.sdk_available or specifications.api_documentation_url %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">SOFTWARE</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if specifications.operating_system %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">OS:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.operating_system }}</span>
+                            </div>
+                            {% endif %}
+                            {% if specifications.firmware_version %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Firmware:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.firmware_version }}</span>
+                            </div>
+                            {% endif %}
+                            {% if specifications.sdk_available %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ SDK Available</span></div>
+                            {% endif %}
+                            {% if specifications.api_documentation_url %}
+                            <div>
+                                <a href="{{ specifications.api_documentation_url }}" target="_blank" class="text-cyber-lime hover:underline font-mono text-xs">API Documentation →</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Actuators & Motors -->
+                    {% if specifications.motor_count or specifications.motor_type or specifications.servo_count %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">ACTUATORS</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if specifications.motor_type %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Motor Type:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.motor_type }}{% if specifications.motor_count %} ({{ specifications.motor_count }} motors){% endif %}</span>
+                            </div>
+                            {% endif %}
+                            {% if specifications.servo_count %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Servos:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ specifications.servo_count }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Physical Specifications -->
+            {% if robot.weight_kg or robot.dimensions_length or robot.max_speed_kmh or robot.max_altitude_m or robot.max_payload_kg %}
+            <div class="glass-effect cyber-border rounded-lg p-8">
+                <h2 class="text-3xl font-bold text-cyber-lime mb-6 font-mono">PHYSICAL SPECIFICATIONS</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {% if robot.weight_kg %}
+                    <div>
+                        <p class="text-slate-400 font-mono text-xs mb-1">Weight</p>
+                        <p class="text-slate-300 font-mono text-lg">{{ robot.weight_kg }} kg</p>
+                    </div>
+                    {% endif %}
+                    {% if robot.dimensions_length %}
+                    <div>
+                        <p class="text-slate-400 font-mono text-xs mb-1">Dimensions</p>
+                        <p class="text-slate-300 font-mono text-lg">{{ robot.dimensions_length }} × {{ robot.dimensions_width }} × {{ robot.dimensions_height }} cm</p>
+                    </div>
+                    {% endif %}
+                    {% if robot.max_speed_kmh %}
+                    <div>
+                        <p class="text-slate-400 font-mono text-xs mb-1">Max Speed</p>
+                        <p class="text-slate-300 font-mono text-lg">{{ robot.max_speed_kmh }} km/h</p>
+                    </div>
+                    {% endif %}
+                    {% if robot.max_altitude_m %}
+                    <div>
+                        <p class="text-slate-400 font-mono text-xs mb-1">Max Altitude</p>
+                        <p class="text-slate-300 font-mono text-lg">{{ robot.max_altitude_m }} m</p>
+                    </div>
+                    {% endif %}
+                    {% if robot.max_payload_kg %}
+                    <div>
+                        <p class="text-slate-400 font-mono text-xs mb-1">Max Payload</p>
+                        <p class="text-slate-300 font-mono text-lg">{{ robot.max_payload_kg }} kg</p>
+                    </div>
+                    {% endif %}
+                    {% if robot.operating_temperature_min %}
+                    <div>
+                        <p class="text-slate-400 font-mono text-xs mb-1">Operating Temp</p>
+                        <p class="text-slate-300 font-mono text-lg">{{ robot.operating_temperature_min }}°C to {{ robot.operating_temperature_max }}°C</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- AI System Details -->
+            {% if ai_system %}
+            <div class="glass-effect cyber-border rounded-lg p-8">
+                <h2 class="text-3xl font-bold text-cyber-lime mb-6 font-mono">AI SYSTEM DETAILS</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- AI Capabilities -->
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">CAPABILITIES</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if ai_system.has_autonomous_navigation %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Autonomous Navigation</span></div>
+                            {% endif %}
+                            {% if ai_system.has_object_recognition %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Object Recognition</span></div>
+                            {% endif %}
+                            {% if ai_system.has_speech_recognition %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Speech Recognition</span></div>
+                            {% endif %}
+                            {% if ai_system.has_decision_making %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Decision Making</span></div>
+                            {% endif %}
+                            {% if ai_system.ai_types %}
+                            <div>
+                                <p class="text-slate-400 font-mono text-xs mb-1">AI Types:</p>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for ai_type in ai_system.ai_types %}
+                                    <span class="px-2 py-1 bg-slate-700 rounded text-xs font-mono text-slate-300">{{ ai_type|title }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Model Information -->
+                    {% if ai_system.model_name or ai_system.model_framework or ai_system.model_version %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">MODEL INFORMATION</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if ai_system.model_name %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Model:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ ai_system.model_name }}{% if ai_system.model_version %} v{{ ai_system.model_version }}{% endif %}</span>
+                            </div>
+                            {% endif %}
+                            {% if ai_system.model_framework %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Framework:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ ai_system.model_framework }}</span>
+                            </div>
+                            {% endif %}
+                            {% if ai_system.training_data_size %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Training Data:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ ai_system.training_data_size }}</span>
+                            </div>
+                            {% endif %}
+                            {% if ai_system.inference_speed_ms %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Inference Speed:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ ai_system.inference_speed_ms }} ms</span>
+                            </div>
+                            {% endif %}
+                            {% if ai_system.accuracy_percentage %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Accuracy:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ ai_system.accuracy_percentage }}%</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Learning & Inference -->
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">LEARNING & INFERENCE</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if ai_system.edge_inference %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Edge Inference</span></div>
+                            {% endif %}
+                            {% if ai_system.cloud_inference %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Cloud Inference</span></div>
+                            {% endif %}
+                            {% if ai_system.hybrid_inference %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Hybrid Inference</span></div>
+                            {% endif %}
+                            {% if ai_system.can_retrain %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Can Retrain</span></div>
+                            {% endif %}
+                            {% if ai_system.supports_online_learning %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Online Learning</span></div>
+                            {% endif %}
+                            {% if ai_system.supports_federated_learning %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Federated Learning</span></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Safety & Ethics -->
+                    {% if ai_system.has_explainability or ai_system.bias_mitigation or ai_system.safety_constraints %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">SAFETY & ETHICS</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if ai_system.has_explainability %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Explainability Features</span></div>
+                            {% endif %}
+                            {% if ai_system.bias_mitigation %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Bias Mitigation</span></div>
+                            {% endif %}
+                            {% if ai_system.safety_constraints %}
+                            <div>
+                                <p class="text-slate-400 font-mono text-xs mb-1">Safety Constraints:</p>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for constraint in ai_system.safety_constraints %}
+                                    <span class="px-2 py-1 bg-slate-700 rounded text-xs font-mono text-slate-300">{{ constraint }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if ai_system.ai_documentation_url or ai_system.research_paper_url %}
+                <div class="mt-6 pt-6 border-t border-slate-700">
+                    <div class="flex space-x-4">
+                        {% if ai_system.ai_documentation_url %}
+                        <a href="{{ ai_system.ai_documentation_url }}" target="_blank" class="text-cyber-lime hover:underline font-mono text-sm">AI Documentation →</a>
+                        {% endif %}
+                        {% if ai_system.research_paper_url %}
+                        <a href="{{ ai_system.research_paper_url }}" target="_blank" class="text-cyber-lime hover:underline font-mono text-sm">Research Paper →</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Power System -->
+            {% if power_system %}
+            <div class="glass-effect cyber-border rounded-lg p-8">
+                <h2 class="text-3xl font-bold text-cyber-lime mb-6 font-mono">POWER SYSTEM</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Battery Information -->
+                    {% if power_system.battery_type or power_system.battery_capacity_mah or power_system.battery_voltage_v %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">BATTERY</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if power_system.battery_type %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Type:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ power_system.get_battery_type_display }}</span>
+                            </div>
+                            {% endif %}
+                            {% if power_system.battery_capacity_mah %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Capacity:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ power_system.battery_capacity_mah }} mAh</span>
+                            </div>
+                            {% endif %}
+                            {% if power_system.battery_voltage_v %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Voltage:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ power_system.battery_voltage_v }}V</span>
+                            </div>
+                            {% endif %}
+                            {% if power_system.battery_cells %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Cells:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ power_system.battery_cells }}</span>
+                            </div>
+                            {% endif %}
+                            {% if power_system.is_removable %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Removable Battery</span></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Runtime & Charging -->
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">RUNTIME & CHARGING</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if power_system.operating_time_minutes %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Operating Time:</span>
+                                <span class="text-slate-300 font-mono ml-2">
+                                    {{ power_system.operating_time_minutes }} min
+                                    {% if power_system.max_operating_time_minutes %} (max {{ power_system.max_operating_time_minutes }} min){% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+                            {% if power_system.charging_time_minutes %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Charging Time:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ power_system.charging_time_minutes }} min</span>
+                            </div>
+                            {% endif %}
+                            {% if power_system.charging_method %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Method:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ power_system.charging_method }}</span>
+                            </div>
+                            {% endif %}
+                            {% if power_system.has_fast_charging %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Fast Charging</span></div>
+                            {% endif %}
+                            {% if power_system.supports_wireless_charging %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Wireless Charging</span></div>
+                            {% endif %}
+                            {% if power_system.supports_solar_charging %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Solar Charging</span></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Power Consumption -->
+                    {% if power_system.idle_power_w or power_system.operating_power_w or power_system.peak_power_w %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">POWER CONSUMPTION</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if power_system.idle_power_w %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Idle:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ power_system.idle_power_w }}W</span>
+                            </div>
+                            {% endif %}
+                            {% if power_system.operating_power_w %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Operating:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ power_system.operating_power_w }}W</span>
+                            </div>
+                            {% endif %}
+                            {% if power_system.peak_power_w %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Peak:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ power_system.peak_power_w }}W</span>
+                            </div>
+                            {% endif %}
+                            {% if power_system.energy_efficiency_rating %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Efficiency:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ power_system.energy_efficiency_rating }}</span>
+                            </div>
+                            {% endif %}
+                            {% if power_system.has_power_saving_mode %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Power Saving Mode</span></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Usage Restrictions & Compliance -->
+            {% if usage_restriction %}
+            <div class="glass-effect cyber-border rounded-lg p-8">
+                <h2 class="text-3xl font-bold text-cyber-lime mb-6 font-mono">USAGE RESTRICTIONS & COMPLIANCE</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Restriction Level -->
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">RESTRICTIONS</h3>
+                        <div class="space-y-2 text-sm">
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Level:</span>
+                                <span class="px-2 py-1 bg-red-500/20 text-red-400 rounded font-mono ml-2">
+                                    {{ usage_restriction.get_restriction_level_display|upper }}
+                                </span>
+                            </div>
+                            {% if usage_restriction.minimum_age %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Minimum Age:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ usage_restriction.minimum_age }} years</span>
+                            </div>
+                            {% endif %}
+                            {% if usage_restriction.requires_verification %}
+                            <div><span class="text-red-400 font-mono text-xs">⚠️ Verification Required</span></div>
+                            {% endif %}
+                            {% if usage_restriction.requires_export_license %}
+                            <div><span class="text-red-400 font-mono text-xs">⚠️ Export License Required</span></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Usage Limitations -->
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">ALLOWED USAGE</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if usage_restriction.commercial_use_allowed %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Commercial Use</span></div>
+                            {% endif %}
+                            {% if usage_restriction.personal_use_allowed %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Personal Use</span></div>
+                            {% endif %}
+                            {% if usage_restriction.research_use_allowed %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Research Use</span></div>
+                            {% endif %}
+                            {% if usage_restriction.military_use_allowed %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Military Use</span></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Geographic Restrictions -->
+                    {% if usage_restriction.allowed_countries or usage_restriction.restricted_countries or usage_restriction.embargoed_countries %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">GEOGRAPHIC RESTRICTIONS</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if usage_restriction.allowed_countries %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Allowed Countries:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ usage_restriction.allowed_countries|join:", " }}</span>
+                            </div>
+                            {% endif %}
+                            {% if usage_restriction.restricted_countries %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Restricted:</span>
+                                <span class="text-red-400 font-mono ml-2">{{ usage_restriction.restricted_countries|join:", " }}</span>
+                            </div>
+                            {% endif %}
+                            {% if usage_restriction.embargoed_countries %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Embargoed:</span>
+                                <span class="text-red-400 font-mono ml-2">{{ usage_restriction.embargoed_countries|join:", " }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Compliance & Certifications -->
+                    {% if usage_restriction.fcc_id or usage_restriction.ce_marking or usage_restriction.fda_approved or usage_restriction.aviation_authority_approved or usage_restriction.compliance_standards %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">COMPLIANCE & CERTIFICATIONS</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if usage_restriction.fcc_id %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">FCC ID:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ usage_restriction.fcc_id }}</span>
+                            </div>
+                            {% endif %}
+                            {% if usage_restriction.ce_marking %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ CE Marking</span></div>
+                            {% endif %}
+                            {% if usage_restriction.fda_approved %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ FDA Approved</span></div>
+                            {% endif %}
+                            {% if usage_restriction.aviation_authority_approved %}
+                            <div><span class="text-cyber-lime font-mono text-xs">✓ Aviation Authority Approved</span></div>
+                            {% endif %}
+                            {% if robot.compliance_standards %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Standards:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ robot.compliance_standards|join:", " }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Export Control -->
+                    {% if usage_restriction.export_control_classification or usage_restriction.dual_use %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">EXPORT CONTROL</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if usage_restriction.export_control_classification %}
+                            <div>
+                                <span class="text-slate-400 font-mono text-xs">Classification:</span>
+                                <span class="text-slate-300 font-mono ml-2">{{ usage_restriction.export_control_classification }}</span>
+                            </div>
+                            {% endif %}
+                            {% if usage_restriction.dual_use %}
+                            <div><span class="text-red-400 font-mono text-xs">⚠️ Dual-Use Technology</span></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Legal Requirements -->
+                    {% if usage_restriction.requires_insurance or usage_restriction.requires_registration or usage_restriction.requires_permit or usage_restriction.requires_safety_training %}
+                    <div>
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">LEGAL REQUIREMENTS</h3>
+                        <div class="space-y-2 text-sm">
+                            {% if usage_restriction.requires_insurance %}
+                            <div><span class="text-yellow-400 font-mono text-xs">⚠️ Insurance Required</span></div>
+                            {% endif %}
+                            {% if usage_restriction.requires_registration %}
+                            <div><span class="text-yellow-400 font-mono text-xs">⚠️ Registration Required</span></div>
+                            {% endif %}
+                            {% if usage_restriction.requires_permit %}
+                            <div><span class="text-yellow-400 font-mono text-xs">⚠️ Permit Required</span></div>
+                            {% endif %}
+                            {% if usage_restriction.requires_safety_training %}
+                            <div><span class="text-yellow-400 font-mono text-xs">⚠️ Safety Training Required</span></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if usage_restriction.legal_notices %}
+                    <div class="md:col-span-2">
+                        <h3 class="text-cyber-lime font-bold mb-3 font-mono text-sm">LEGAL NOTICES</h3>
+                        <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                            <p class="text-slate-300 text-sm font-mono">{{ usage_restriction.legal_notices }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Reviews Section -->
+            {% if reviews %}
+            <div class="glass-effect cyber-border rounded-lg p-8">
+                <h2 class="text-3xl font-bold text-cyber-lime mb-6 font-mono">CUSTOMER REVIEWS</h2>
+                <div class="space-y-6">
+                    {% for review in reviews|slice:":10" %}
+                    <div class="border-b border-slate-700 pb-6 {% if review.is_featured %}bg-cyber-lime/5 border-cyber-lime/30 rounded-lg p-4{% endif %}">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <p class="text-slate-300 font-bold">{{ review.user.username }}{% if review.is_verified_purchase %} <span class="text-cyber-lime text-xs font-mono">(Verified Purchase)</span>{% endif %}</p>
+                                <p class="text-slate-500 text-xs font-mono">{{ review.created_at|date:"M d, Y" }}</p>
+                            </div>
+                            <div class="text-yellow-400">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if review.title %}
+                        <h4 class="text-cyber-lime font-bold mb-2 font-mono text-sm">{{ review.title }}</h4>
+                        {% endif %}
+                        {% if review.comment %}
+                        <p class="text-slate-300 text-sm">{{ review.comment }}</p>
+                        {% endif %}
+                        {% if review.seller_response %}
+                        <div class="mt-3 pt-3 border-t border-slate-700">
+                            <p class="text-cyber-lime font-mono text-xs mb-1">SELLER RESPONSE:</p>
+                            <p class="text-slate-400 text-sm">{{ review.seller_response }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-8">
+            <a href="{% url 'verification:robot-list' %}" class="px-4 py-2 text-slate-300 hover:text-cyber-lime hover:underline inline-block font-mono">
+                ← Back to Robots
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

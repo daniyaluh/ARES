@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review License - Staff Dashboard{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-cyber-lime">Review License Application</h1>
+                    <p class="text-slate-400 mt-1 font-mono text-sm">Application #{{ license.id|truncatechars:12 }}</p>
+                </div>
+                <a href="{% url 'verification:staff-pending-licenses' %}" class="text-cyber-lime hover:underline font-mono text-sm">
+                    ← Back to Applications
+                </a>
+            </div>
+        </div>
+
+        <!-- Status Banner -->
+        <div class="mb-6 p-4 rounded-lg border-2 
+            {% if license.status == 'pending' or license.status == 'under_review' %}bg-yellow-500/20 border-yellow-500/50
+            {% elif license.status == 'approved' %}bg-green-500/20 border-green-500/50
+            {% elif license.status == 'rejected' %}bg-red-500/20 border-red-500/50
+            {% else %}bg-slate-700/50 border-slate-600{% endif %}">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">
+                    {% if license.status == 'pending' or license.status == 'under_review' %}⏳
+                    {% elif license.status == 'approved' %}✅
+                    {% elif license.status == 'rejected' %}❌
+                    {% else %}📋{% endif %}
+                </span>
+                <div>
+                    <p class="font-bold font-mono 
+                        {% if license.status == 'pending' or license.status == 'under_review' %}text-yellow-400
+                        {% elif license.status == 'approved' %}text-green-400
+                        {% elif license.status == 'rejected' %}text-red-400
+                        {% else %}text-slate-300{% endif %}">
+                        Status: {{ license.get_status_display }}
+                    </p>
+                    <p class="text-sm text-slate-400">Submitted: {{ license.submitted_at|date:"M d, Y H:i"|default:"Not submitted" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Applicant Info -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-bold text-cyber-lime mb-4">👤 APPLICANT INFORMATION</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">USERNAME</p>
+                    <p class="text-slate-200">{{ license.user.username }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">EMAIL</p>
+                    <p class="text-slate-200">{{ license.user.email }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">CONTACT PHONE</p>
+                    <p class="text-slate-200">{{ license.contact_phone|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">ACCOUNT CREATED</p>
+                    <p class="text-slate-200 font-mono text-sm">{{ license.user.date_joined|date:"M d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- License Details -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-bold text-cyber-lime mb-4">📋 LICENSE DETAILS</h3>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">LICENSE TYPE</p>
+                    <p class="text-slate-200">{{ license.get_license_type_display }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">COUNTRY</p>
+                    <p class="text-slate-200">{{ license.country|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">COMPANY NAME</p>
+                    <p class="text-slate-200">{{ license.company_name|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">REGISTRATION NUMBER</p>
+                    <p class="text-slate-200 font-mono text-sm">{{ license.company_registration_number|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">BUSINESS TYPE</p>
+                    <p class="text-slate-200">{{ license.business_type|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">ADDRESS</p>
+                    <p class="text-slate-200">{{ license.address|default:"-" }}</p>
+                </div>
+            </div>
+
+            {% if license.purpose %}
+            <div class="mb-4">
+                <p class="text-slate-400 text-xs font-mono mb-1">PURPOSE</p>
+                <p class="text-slate-200 bg-slate-800/50 p-3 rounded-lg">{{ license.purpose }}</p>
+            </div>
+            {% endif %}
+
+            {% if license.justification %}
+            <div class="mb-4">
+                <p class="text-slate-400 text-xs font-mono mb-1">JUSTIFICATION</p>
+                <p class="text-slate-200 bg-slate-800/50 p-3 rounded-lg">{{ license.justification }}</p>
+            </div>
+            {% endif %}
+
+            {% if license.end_use_statement %}
+            <div class="mb-4">
+                <p class="text-slate-400 text-xs font-mono mb-1">END USE STATEMENT</p>
+                <p class="text-slate-200 bg-slate-800/50 p-3 rounded-lg">{{ license.end_use_statement }}</p>
+            </div>
+            {% endif %}
+
+            {% if license.product_categories %}
+            <div>
+                <p class="text-slate-400 text-xs font-mono mb-1">PRODUCT CATEGORIES</p>
+                <p class="text-slate-200 bg-slate-800/50 p-3 rounded-lg">{{ license.product_categories }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Supporting Documents -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-bold text-cyber-lime mb-4">📎 SUPPORTING DOCUMENTS</h3>
+            <div class="space-y-2">
+                {% if license.supporting_document_1 %}
+                <a href="{{ license.supporting_document_1.url }}" target="_blank" 
+                   class="flex items-center gap-2 text-cyber-lime hover:underline">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Document 1
+                </a>
+                {% endif %}
+                {% if license.supporting_document_2 %}
+                <a href="{{ license.supporting_document_2.url }}" target="_blank" 
+                   class="flex items-center gap-2 text-cyber-lime hover:underline">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Document 2
+                </a>
+                {% endif %}
+                {% if license.supporting_document_3 %}
+                <a href="{{ license.supporting_document_3.url }}" target="_blank" 
+                   class="flex items-center gap-2 text-cyber-lime hover:underline">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Document 3
+                </a>
+                {% endif %}
+                {% if not license.supporting_document_1 and not license.supporting_document_2 and not license.supporting_document_3 %}
+                <p class="text-slate-500 italic">No supporting documents uploaded.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Review Actions -->
+        {% if license.status in 'pending,under_review,additional_info_required' %}
+        <div class="glass-effect cyber-border rounded-lg p-6">
+            <h3 class="text-lg font-bold text-cyber-lime mb-4">⚖️ REVIEW DECISION</h3>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-6">
+                    <label for="notes" class="block text-slate-400 font-mono text-sm mb-2">REVIEWER NOTES</label>
+                    <textarea name="notes" id="notes" rows="4"
+                              class="w-full bg-slate-800/50 text-slate-200 px-4 py-3 rounded-lg border border-slate-600 focus:border-cyber-lime focus:outline-none font-mono resize-none"
+                              placeholder="Add notes about your decision (visible to applicant)..."></textarea>
+                </div>
+
+                <div class="flex flex-wrap gap-4">
+                    <button type="submit" name="action" value="approve" 
+                            class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-mono font-bold">
+                        ✅ Approve License
+                    </button>
+                    <button type="submit" name="action" value="request_info" 
+                            class="flex-1 px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-mono font-bold">
+                        ❓ Request More Info
+                    </button>
+                    <button type="submit" name="action" value="reject" 
+                            class="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-mono font-bold">
+                        ❌ Reject License
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <!-- Already Reviewed -->
+        <div class="glass-effect cyber-border rounded-lg p-6">
+            <h3 class="text-lg font-bold text-slate-400 mb-4">REVIEW COMPLETE</h3>
+            {% if license.reviewed_by %}
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">REVIEWED BY</p>
+                    <p class="text-slate-200">{{ license.reviewed_by.username }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">REVIEWED AT</p>
+                    <p class="text-slate-200 font-mono text-sm">{{ license.reviewed_at|date:"M d, Y H:i" }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if license.reviewer_notes %}
+            <div>
+                <p class="text-slate-400 text-xs font-mono mb-1">REVIEWER NOTES</p>
+                <p class="text-slate-200 bg-slate-800/50 p-3 rounded-lg">{{ license.reviewer_notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

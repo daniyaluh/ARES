@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Invoices - Staff - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-cyber-lime">ALL INVOICES</h1>
+                    <p class="text-slate-400 mt-1">Manage all system invoices</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="{% url 'users:staff-dashboard' %}" class="text-cyber-lime hover:underline font-mono text-sm">
+                        ← Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <div class="glass-effect cyber-border rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-cyber-lime">{{ total_count }}</p>
+                <p class="text-slate-400 text-xs">Total</p>
+            </div>
+            <div class="glass-effect cyber-border rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-blue-400">{{ issued_count }}</p>
+                <p class="text-slate-400 text-xs">Issued</p>
+            </div>
+            <div class="glass-effect cyber-border rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-yellow-400">{{ sent_count }}</p>
+                <p class="text-slate-400 text-xs">Sent</p>
+            </div>
+            <div class="glass-effect cyber-border rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-green-400">{{ paid_count }}</p>
+                <p class="text-slate-400 text-xs">Paid</p>
+            </div>
+            <div class="glass-effect cyber-border rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-red-400">{{ overdue_count }}</p>
+                <p class="text-slate-400 text-xs">Overdue</p>
+            </div>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="glass-effect cyber-border rounded-lg p-4 mb-6">
+            <div class="flex flex-wrap gap-4 items-center">
+                <!-- Search -->
+                <form method="get" class="flex-1 min-w-[200px]">
+                    <input type="hidden" name="status" value="{{ status_filter }}">
+                    <div class="flex">
+                        <input type="text" name="q" value="{{ search }}" 
+                               placeholder="Search invoices..."
+                               class="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-l-lg text-slate-200 focus:outline-none focus:border-cyber-lime">
+                        <button type="submit" class="px-4 py-2 bg-cyber-lime text-black rounded-r-lg font-mono text-sm">
+                            SEARCH
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Status Filter -->
+                <div class="flex flex-wrap gap-2">
+                    <a href="?q={{ search }}" 
+                       class="px-3 py-2 rounded-lg font-mono text-xs transition-all
+                              {% if not status_filter %}bg-cyber-lime text-black{% else %}bg-slate-700 text-slate-300 hover:bg-slate-600{% endif %}">
+                        ALL
+                    </a>
+                    <a href="?status=issued&q={{ search }}" 
+                       class="px-3 py-2 rounded-lg font-mono text-xs transition-all
+                              {% if status_filter == 'issued' %}bg-blue-500 text-white{% else %}bg-slate-700 text-slate-300 hover:bg-slate-600{% endif %}">
+                        ISSUED
+                    </a>
+                    <a href="?status=sent&q={{ search }}" 
+                       class="px-3 py-2 rounded-lg font-mono text-xs transition-all
+                              {% if status_filter == 'sent' %}bg-yellow-500 text-black{% else %}bg-slate-700 text-slate-300 hover:bg-slate-600{% endif %}">
+                        SENT
+                    </a>
+                    <a href="?status=paid&q={{ search }}" 
+                       class="px-3 py-2 rounded-lg font-mono text-xs transition-all
+                              {% if status_filter == 'paid' %}bg-green-500 text-black{% else %}bg-slate-700 text-slate-300 hover:bg-slate-600{% endif %}">
+                        PAID
+                    </a>
+                    <a href="?status=overdue&q={{ search }}" 
+                       class="px-3 py-2 rounded-lg font-mono text-xs transition-all
+                              {% if status_filter == 'overdue' %}bg-red-500 text-white{% else %}bg-slate-700 text-slate-300 hover:bg-slate-600{% endif %}">
+                        OVERDUE
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoices Table -->
+        <div class="glass-effect cyber-border rounded-lg overflow-hidden">
+            {% if invoices %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-slate-800/50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-mono text-cyber-lime uppercase">Invoice #</th>
+                            <th class="px-4 py-3 text-left text-xs font-mono text-cyber-lime uppercase">Customer</th>
+                            <th class="px-4 py-3 text-left text-xs font-mono text-cyber-lime uppercase">Amount</th>
+                            <th class="px-4 py-3 text-left text-xs font-mono text-cyber-lime uppercase">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-mono text-cyber-lime uppercase">Issue Date</th>
+                            <th class="px-4 py-3 text-left text-xs font-mono text-cyber-lime uppercase">Due Date</th>
+                            <th class="px-4 py-3 text-left text-xs font-mono text-cyber-lime uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700">
+                        {% for invoice in invoices %}
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <span class="text-cyber-lime font-mono font-bold">{{ invoice.invoice_number }}</span>
+                            </td>
+                            <td class="px-4 py-4">
+                                <p class="text-slate-200 font-medium">{{ invoice.customer_name }}</p>
+                                {% if invoice.customer_company %}
+                                <p class="text-slate-400 text-xs">{{ invoice.customer_company }}</p>
+                                {% endif %}
+                                <p class="text-slate-500 text-xs">{{ invoice.customer_email }}</p>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <span class="text-slate-200 font-mono text-lg">${{ invoice.total_amount }}</span>
+                                <span class="text-slate-500 text-xs">{{ invoice.currency }}</span>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs rounded font-mono
+                                    {% if invoice.status == 'paid' %}bg-green-500/20 text-green-400
+                                    {% elif invoice.status == 'overdue' %}bg-red-500/20 text-red-400
+                                    {% elif invoice.status == 'sent' %}bg-yellow-500/20 text-yellow-400
+                                    {% elif invoice.status == 'issued' %}bg-blue-500/20 text-blue-400
+                                    {% elif invoice.status == 'cancelled' %}bg-slate-500/20 text-slate-400
+                                    {% else %}bg-slate-500/20 text-slate-400{% endif %}">
+                                    {{ invoice.get_status_display|upper }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <span class="text-slate-400 text-sm">{{ invoice.issue_date|date:"M d, Y" }}</span>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                {% if invoice.due_date %}
+                                    <span class="text-sm {% if invoice.status == 'overdue' %}text-red-400{% else %}text-slate-400{% endif %}">
+                                        {{ invoice.due_date|date:"M d, Y" }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-slate-500 text-sm">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <div class="flex gap-2 flex-wrap">
+                                    <a href="{% url 'orders:invoice-detail' invoice.id %}" 
+                                       class="px-2 py-1 bg-cyber-lime/20 text-cyber-lime rounded text-xs font-mono hover:bg-cyber-lime/30">
+                                        👁️ VIEW
+                                    </a>
+                                    
+                                    <!-- Status Update Dropdown -->
+                                    <div class="relative" x-data="{ open: false }">
+                                        <button @click="open = !open" 
+                                                class="px-2 py-1 bg-slate-600 text-slate-200 rounded text-xs font-mono hover:bg-slate-500 flex items-center gap-1">
+                                            <span>⚡ STATUS</span>
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </button>
+                                        <div x-show="open" @click.away="open = false"
+                                             x-transition:enter="transition ease-out duration-100"
+                                             x-transition:enter-start="transform opacity-0 scale-95"
+                                             x-transition:enter-end="transform opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-75"
+                                             x-transition:leave-start="transform opacity-100 scale-100"
+                                             x-transition:leave-end="transform opacity-0 scale-95"
+                                             class="absolute right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-20 min-w-[150px] py-1">
+                                            <form action="{% url 'orders:staff-invoice-update-status' invoice.id %}" method="post">
+                                                {% csrf_token %}
+                                                <p class="px-3 py-1 text-xs text-slate-500 border-b border-slate-700 mb-1">Change status to:</p>
+                                                
+                                                <button type="submit" name="status" value="draft" 
+                                                        class="flex items-center gap-2 w-full text-left px-3 py-2 text-xs text-slate-400 hover:bg-slate-700 {% if invoice.status == 'draft' %}bg-slate-700{% endif %}">
+                                                    <span>📝</span> Draft
+                                                    {% if invoice.status == 'draft' %}<span class="ml-auto text-cyber-lime">✓</span>{% endif %}
+                                                </button>
+                                                
+                                                <button type="submit" name="status" value="issued" 
+                                                        class="flex items-center gap-2 w-full text-left px-3 py-2 text-xs text-blue-400 hover:bg-slate-700 {% if invoice.status == 'issued' %}bg-slate-700{% endif %}">
+                                                    <span>📄</span> Issued
+                                                    {% if invoice.status == 'issued' %}<span class="ml-auto text-cyber-lime">✓</span>{% endif %}
+                                                </button>
+                                                
+                                                <button type="submit" name="status" value="sent" 
+                                                        class="flex items-center gap-2 w-full text-left px-3 py-2 text-xs text-yellow-400 hover:bg-slate-700 {% if invoice.status == 'sent' %}bg-slate-700{% endif %}">
+                                                    <span>📨</span> Sent
+                                                    {% if invoice.status == 'sent' %}<span class="ml-auto text-cyber-lime">✓</span>{% endif %}
+                                                </button>
+                                                
+                                                <button type="submit" name="status" value="paid" 
+                                                        class="flex items-center gap-2 w-full text-left px-3 py-2 text-xs text-green-400 hover:bg-slate-700 {% if invoice.status == 'paid' %}bg-slate-700{% endif %}">
+                                                    <span>✅</span> Paid
+                                                    {% if invoice.status == 'paid' %}<span class="ml-auto text-cyber-lime">✓</span>{% endif %}
+                                                </button>
+                                                
+                                                <div class="border-t border-slate-700 my-1"></div>
+                                                
+                                                <button type="submit" name="status" value="overdue" 
+                                                        class="flex items-center gap-2 w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-slate-700 {% if invoice.status == 'overdue' %}bg-slate-700{% endif %}">
+                                                    <span>⚠️</span> Overdue
+                                                    {% if invoice.status == 'overdue' %}<span class="ml-auto text-cyber-lime">✓</span>{% endif %}
+                                                </button>
+                                                
+                                                <button type="submit" name="status" value="cancelled" 
+                                                        class="flex items-center gap-2 w-full text-left px-3 py-2 text-xs text-slate-500 hover:bg-slate-700 {% if invoice.status == 'cancelled' %}bg-slate-700{% endif %}">
+                                                    <span>❌</span> Cancelled
+                                                    {% if invoice.status == 'cancelled' %}<span class="ml-auto text-cyber-lime">✓</span>{% endif %}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if invoices.has_other_pages %}
+            <div class="bg-slate-800/50 px-6 py-4">
+                <div class="flex justify-center gap-2">
+                    {% if invoices.has_previous %}
+                        <a href="?page={{ invoices.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&q={{ search }}{% endif %}" 
+                           class="px-3 py-1 bg-slate-700 text-slate-300 rounded hover:bg-slate-600">
+                            Previous
+                        </a>
+                    {% endif %}
+                    
+                    <span class="px-3 py-1 text-slate-400">
+                        Page {{ invoices.number }} of {{ invoices.paginator.num_pages }}
+                    </span>
+                    
+                    {% if invoices.has_next %}
+                        <a href="?page={{ invoices.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&q={{ search }}{% endif %}" 
+                           class="px-3 py-1 bg-slate-700 text-slate-300 rounded hover:bg-slate-600">
+                            Next
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-16">
+                <svg class="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p class="text-slate-400 text-lg mb-2">No invoices found</p>
+                {% if search %}
+                <p class="text-slate-500 text-sm">Try a different search term</p>
+                {% else %}
+                <p class="text-slate-500 text-sm">Invoices will appear here when purchase requests are approved</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

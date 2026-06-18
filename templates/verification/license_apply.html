@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Edit License Application{% else %}Apply for Export License{% endif %} - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="{% url 'verification:license-list' %}" class="text-slate-400 hover:text-cyber-lime text-sm font-mono mb-2 inline-block">
+                ← Back to Licenses
+            </a>
+            <h1 class="text-3xl font-bold text-cyber-lime font-mono mb-2">
+                {% if is_edit %}EDIT LICENSE APPLICATION{% else %}APPLY FOR EXPORT LICENSE{% endif %}
+            </h1>
+            <p class="text-slate-400">Complete the form below to apply for an export license</p>
+        </div>
+
+        {% if is_edit and license.additional_info_request %}
+        <div class="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+            <p class="text-orange-400 font-mono text-sm mb-1">⚠️ ADDITIONAL INFORMATION REQUIRED:</p>
+            <p class="text-slate-300">{{ license.additional_info_request }}</p>
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- License Type Section -->
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <h2 class="text-xl font-bold text-cyber-lime font-mono mb-4">LICENSE TYPE</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for value, label in license_types %}
+                    <label class="flex items-center p-4 border border-slate-700 rounded-lg cursor-pointer hover:border-cyber-lime/50 transition-colors {% if is_edit and license.license_type == value %}border-cyber-lime bg-cyber-lime/10{% endif %}">
+                        <input type="radio" name="license_type" value="{{ value }}" 
+                               {% if is_edit and license.license_type == value %}checked{% endif %}
+                               {% if not is_edit and value == 'individual' %}checked{% endif %}
+                               class="w-4 h-4 text-cyber-lime bg-slate-800 border-slate-600 focus:ring-cyber-lime">
+                        <div class="ml-3">
+                            <span class="text-slate-200 font-mono">{{ label }}</span>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Company Information (for commercial/government) -->
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <h2 class="text-xl font-bold text-cyber-lime font-mono mb-4">APPLICANT INFORMATION</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Company/Organization Name (if applicable)</label>
+                        <input type="text" name="company_name" 
+                               value="{% if is_edit %}{{ license.company_name }}{% endif %}"
+                               class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none"
+                               placeholder="Leave blank for individual licenses">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Registration Number</label>
+                        <input type="text" name="company_registration_number" 
+                               value="{% if is_edit %}{{ license.company_registration_number }}{% endif %}"
+                               class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none"
+                               placeholder="Business registration #">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Business Type</label>
+                        <input type="text" name="business_type" 
+                               value="{% if is_edit %}{{ license.business_type }}{% endif %}"
+                               class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none"
+                               placeholder="e.g., Defense Contractor, Research Lab">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Country <span class="text-red-400">*</span></label>
+                        <input type="text" name="country" required
+                               value="{% if is_edit %}{{ license.country }}{% endif %}"
+                               class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none"
+                               placeholder="Country of operation/residence">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Contact Phone <span class="text-red-400">*</span></label>
+                        <input type="tel" name="contact_phone" required
+                               value="{% if is_edit %}{{ license.contact_phone }}{% endif %}"
+                               class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none"
+                               placeholder="+1 234 567 8900">
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Contact Email <span class="text-red-400">*</span></label>
+                        <input type="email" name="contact_email" required
+                               value="{% if is_edit %}{{ license.contact_email }}{% else %}{{ user_email }}{% endif %}"
+                               class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none">
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Full Address <span class="text-red-400">*</span></label>
+                        <textarea name="address" required rows="3"
+                                  class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none"
+                                  placeholder="Complete registered address">{% if is_edit %}{{ license.address }}{% endif %}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Purpose & Justification -->
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <h2 class="text-xl font-bold text-cyber-lime font-mono mb-4">PURPOSE & JUSTIFICATION</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Purpose of License <span class="text-red-400">*</span></label>
+                        <textarea name="purpose" required rows="3"
+                                  class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none"
+                                  placeholder="Describe the intended use of export-controlled products">{% if is_edit %}{{ license.purpose }}{% endif %}</textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Justification <span class="text-red-400">*</span></label>
+                        <textarea name="justification" required rows="3"
+                                  class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none"
+                                  placeholder="Explain why you need access to export-controlled items">{% if is_edit %}{{ license.justification }}{% endif %}</textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Product Categories</label>
+                        <textarea name="product_categories" rows="2"
+                                  class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none"
+                                  placeholder="Specific product categories or types you need access to">{% if is_edit %}{{ license.product_categories }}{% endif %}</textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-slate-300 font-mono text-sm mb-2">End-Use Statement</label>
+                        <textarea name="end_use_statement" rows="2"
+                                  class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none"
+                                  placeholder="Official statement of end-use for the products">{% if is_edit %}{{ license.end_use_statement }}{% endif %}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supporting Documents -->
+            <div class="glass-effect cyber-border rounded-lg p-6">
+                <h2 class="text-xl font-bold text-cyber-lime font-mono mb-4">SUPPORTING DOCUMENTS</h2>
+                <p class="text-slate-400 text-sm mb-4">Upload relevant documents such as ID, business registration, authorization letters, etc.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Document 1</label>
+                        <input type="file" name="supporting_document_1" 
+                               class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-cyber-lime/20 file:text-cyber-lime file:cursor-pointer">
+                        {% if is_edit and license.supporting_document_1 %}
+                        <p class="text-xs text-slate-500 mt-1">Current: {{ license.supporting_document_1.name }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Document 2</label>
+                        <input type="file" name="supporting_document_2" 
+                               class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-cyber-lime/20 file:text-cyber-lime file:cursor-pointer">
+                        {% if is_edit and license.supporting_document_2 %}
+                        <p class="text-xs text-slate-500 mt-1">Current: {{ license.supporting_document_2.name }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-slate-300 font-mono text-sm mb-2">Document 3</label>
+                        <input type="file" name="supporting_document_3" 
+                               class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 focus:border-cyber-lime focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-cyber-lime/20 file:text-cyber-lime file:cursor-pointer">
+                        {% if is_edit and license.supporting_document_3 %}
+                        <p class="text-xs text-slate-500 mt-1">Current: {{ license.supporting_document_3.name }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-end">
+                <button type="submit" name="action" value="draft" 
+                        class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg font-mono transition-colors">
+                    SAVE AS DRAFT
+                </button>
+                <button type="submit" name="action" value="submit" 
+                        class="cyber-button px-8 py-3 rounded-lg font-bold">
+                    SUBMIT APPLICATION
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Support Tickets - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-cyber-lime">My Support Tickets</h1>
+                    <p class="text-slate-400 mt-1 font-mono text-sm">Track your support requests</p>
+                </div>
+                <a href="{% url 'support:support-ticket-create' %}" class="cyber-button px-4 py-2 rounded-lg">
+                    + New Ticket
+                </a>
+            </div>
+        </div>
+
+        <!-- Tickets -->
+        {% if tickets %}
+        <div class="glass-effect cyber-border rounded-lg overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-slate-800/50 border-b border-slate-700">
+                    <tr>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">SUBJECT</th>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">PRIORITY</th>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">STATUS</th>
+                        <th class="text-left px-6 py-4 text-cyber-lime font-mono text-sm">CREATED</th>
+                        <th class="text-center px-6 py-4 text-cyber-lime font-mono text-sm">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-700">
+                    {% for ticket in tickets %}
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-6 py-4">
+                            <span class="text-slate-200">{{ ticket.subject|truncatechars:50 }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs rounded font-mono
+                                {% if ticket.priority == 'urgent' %}bg-red-500/20 text-red-400
+                                {% elif ticket.priority == 'high' %}bg-orange-500/20 text-orange-400
+                                {% elif ticket.priority == 'medium' %}bg-yellow-500/20 text-yellow-400
+                                {% else %}bg-slate-500/20 text-slate-400{% endif %}">
+                                {{ ticket.get_priority_display|upper }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs rounded font-mono
+                                {% if ticket.status == 'open' %}bg-green-500/20 text-green-400
+                                {% elif ticket.status == 'in_progress' %}bg-yellow-500/20 text-yellow-400
+                                {% elif ticket.status == 'closed' %}bg-slate-500/20 text-slate-400
+                                {% else %}bg-blue-500/20 text-blue-400{% endif %}">
+                                {{ ticket.get_status_display|upper }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-slate-400 font-mono text-sm">
+                            {{ ticket.created_at|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{% url 'support:support-ticket-detail' ticket.id %}" class="text-cyber-lime hover:underline font-mono text-sm">
+                                VIEW
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="glass-effect cyber-border rounded-lg p-12 text-center">
+            <div class="text-6xl mb-4">📭</div>
+            <h3 class="text-xl font-bold text-slate-300 mb-2">No Tickets Yet</h3>
+            <p class="text-slate-500 mb-6">You haven't submitted any support tickets.</p>
+            <a href="{% url 'support:support-ticket-create' %}" class="cyber-button px-6 py-3 rounded-lg">
+                Create Your First Ticket
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

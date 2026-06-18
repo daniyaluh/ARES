@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Security Settings - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-effect cyber-border rounded-lg p-8">
+            <h1 class="text-4xl font-bold text-cyber-lime mb-2 font-mono">SECURITY SETTINGS</h1>
+            <p class="text-slate-400 text-sm mb-8 font-mono">Manage your account security</p>
+            
+            <div class="space-y-6">
+                <div class="border-b border-slate-700 pb-4">
+                    <h2 class="text-xl font-bold text-cyber-lime mb-4">Password</h2>
+                    <p class="text-slate-400 mb-4">Change your account password</p>
+                    <a href="#" class="cyber-button px-4 py-2 rounded-lg text-sm">
+                        CHANGE PASSWORD
+                    </a>
+                </div>
+                
+                <div class="border-b border-slate-700 pb-4">
+                    <h2 class="text-xl font-bold text-cyber-lime mb-4">Two-Factor Authentication</h2>
+                    <p class="text-slate-400 mb-4">
+                        Status: 
+                        <span class="{% if user.two_factor_enabled %}text-cyber-lime{% else %}text-red-400{% endif %}">
+                            {% if user.two_factor_enabled %}ENABLED{% else %}DISABLED{% endif %}
+                        </span>
+                    </p>
+                    
+                    {% if user.two_factor_enabled %}
+                        <div class="mb-4">
+                            <p class="text-slate-300 text-sm mb-2">2FA is currently enabled. You'll need to enter a verification code each time you log in.</p>
+                            <form method="post" action="{% url 'users:2fa-disable' %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="cyber-button px-4 py-2 rounded-lg text-sm bg-red-600 hover:bg-red-700"
+                                        onclick="return confirm('Are you sure you want to disable 2FA? This will make your account less secure.')">
+                                    DISABLE 2FA
+                                </button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="mb-4">
+                            <p class="text-slate-300 text-sm mb-2">2FA is currently disabled. Enable it to add an extra layer of security to your account.</p>
+                            <form method="post" action="{% url 'users:2fa-enable' %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="cyber-button px-4 py-2 rounded-lg text-sm">
+                                    ENABLE 2FA
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    
+                    <a href="{% url 'users:security-key-list' %}" class="cyber-button px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">
+                        MANAGE SECURITY KEYS
+                    </a>
+                </div>
+                
+                <div class="border-b border-slate-700 pb-4">
+                    <h2 class="text-xl font-bold text-cyber-lime mb-4">Active Sessions</h2>
+                    <p class="text-slate-400 mb-4">View and manage your active sessions</p>
+                    <a href="{% url 'users:session-list' %}" class="cyber-button px-4 py-2 rounded-lg text-sm">
+                        VIEW SESSIONS
+                    </a>
+                </div>
+                
+                <div class="flex justify-end">
+                    <a href="{% url 'users:profile' %}" class="cyber-button px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600">
+                        BACK TO PROFILE
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

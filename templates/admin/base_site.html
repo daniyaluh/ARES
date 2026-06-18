@@ -1,0 +1,128 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | ARES Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* ARES Admin Theme */
+    :root {
+        --ares-lime: #a3e635;
+        --ares-dark: #1a1a2e;
+        --ares-darker: #16213e;
+    }
+    
+    /* Header styling */
+    #header {
+        background: linear-gradient(135deg, var(--ares-dark) 0%, var(--ares-darker) 100%) !important;
+    }
+    
+    #branding h1 {
+        color: var(--ares-lime) !important;
+    }
+    
+    #branding h1 a:link, #branding h1 a:visited {
+        color: var(--ares-lime) !important;
+    }
+    
+    /* Notification badges in header */
+    .ares-header-notifications {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-left: auto;
+        padding-right: 16px;
+    }
+    
+    .ares-header-notifications a {
+        display: flex;
+        align-items: center;
+        color: #fff;
+        text-decoration: none;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        background: rgba(255,255,255,0.1);
+        transition: background 0.2s;
+    }
+    
+    .ares-header-notifications a:hover {
+        background: rgba(255,255,255,0.2);
+        text-decoration: none;
+    }
+    
+    .ares-header-notifications .badge {
+        background: #dc3545;
+        color: white;
+        border-radius: 10px;
+        padding: 2px 6px;
+        font-size: 10px;
+        font-weight: 700;
+        margin-left: 6px;
+        animation: pulse-badge 2s infinite;
+    }
+    
+    @keyframes pulse-badge {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    /* Sidebar notification badges */
+    .sidebar-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        font-size: 10px;
+        font-weight: 700;
+        color: white;
+        background: #dc3545;
+        border-radius: 9px;
+        margin-left: 6px;
+    }
+    
+    /* User tools styling */
+    #user-tools {
+        display: flex;
+        align-items: center;
+    }
+    
+    #user-tools a {
+        color: rgba(255,255,255,0.8);
+    }
+    
+    #user-tools a:hover {
+        color: var(--ares-lime);
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">🤖 ARES Administration</a>
+</h1>
+{% if admin_has_pending %}
+<div class="ares-header-notifications">
+    {% if admin_pending_verifications > 0 %}
+    <a href="{% url 'admin:verification_verificationrequest_changelist' %}?status__exact=pending" title="Pending verification requests">
+        📋 <span class="badge">{{ admin_pending_verifications }}</span>
+    </a>
+    {% endif %}
+    {% if admin_pending_licenses > 0 %}
+    <a href="{% url 'admin:verification_exportlicense_changelist' %}?status__exact=pending" title="Pending license applications">
+        📜 <span class="badge">{{ admin_pending_licenses }}</span>
+    </a>
+    {% endif %}
+    {% if admin_pending_orders > 0 %}
+    <a href="{% url 'admin:orders_purchaserequest_changelist' %}?status__exact=pending" title="Pending purchase orders">
+        🛒 <span class="badge">{{ admin_pending_orders }}</span>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

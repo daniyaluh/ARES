@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Two-Factor Authentication - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate flex items-center justify-center py-12">
+    <div class="max-w-md w-full">
+        <div class="glass-effect cyber-border rounded-lg p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-cyber-lime mb-2">2FA VERIFICATION</h1>
+                <p class="text-slate-400 font-mono text-sm">Two-Factor Authentication Required</p>
+            </div>
+
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-500/20 text-red-400{% elif message.tags == 'success' %}bg-green-500/20 text-green-400{% else %}bg-blue-500/20 text-blue-400{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <div class="mb-4 p-3 rounded-lg text-sm bg-red-500/20 text-red-400">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <div class="mb-6">
+                <p class="text-slate-300 text-sm mb-2">
+                    Please enter the verification code from your 
+                    {% if method == 'totp' %}
+                        authenticator app
+                    {% elif method == 'sms' %}
+                        SMS message
+                    {% elif method == 'email' %}
+                        email
+                    {% elif method == 'backup' %}
+                        backup code
+                    {% else %}
+                        2FA device
+                    {% endif %}
+                </p>
+                {% if user %}
+                <p class="text-slate-400 text-xs font-mono">Logging in as: {{ user.email }}</p>
+                {% endif %}
+                
+                {% if method == 'email' and email_code %}
+                <div class="mt-4 p-4 bg-cyber-lime/10 border border-cyber-lime/30 rounded-lg">
+                    <p class="text-cyber-lime font-mono text-sm mb-2 font-bold">📧 DEVELOPMENT MODE - EMAIL VERIFICATION CODE:</p>
+                    <p class="text-3xl font-mono font-bold text-cyber-lime text-center tracking-widest py-2">{{ email_code }}</p>
+                    <p class="text-slate-400 text-xs mt-2 text-center">⚠️ In production, this code will be sent to {{ user.email }}</p>
+                    <p class="text-slate-500 text-xs mt-1 text-center font-mono">Code expires in 5 minutes</p>
+                </div>
+                {% elif method == 'email' %}
+                <div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <p class="text-blue-400 font-mono text-sm mb-2">📧 Check your email inbox at {{ user.email }}</p>
+                    <p class="text-slate-400 text-xs mt-2 text-center">A verification code has been sent to your email address</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label class="block text-cyber-lime font-mono text-sm mb-2">Verification Code</label>
+                    <input type="text" name="two_factor_code" required 
+                           maxlength="10" 
+                           pattern="[0-9A-Z-]+"
+                           placeholder="Enter 6-digit code or backup code"
+                           class="w-full bg-slate-850 border border-cyber-lime/30 text-slate-300 rounded-lg px-4 py-2 focus:border-cyber-lime focus:outline-none text-center text-2xl font-mono tracking-widest"
+                           autocomplete="one-time-code"
+                           autofocus>
+                    <p class="text-slate-500 text-xs mt-1 text-center">
+                        {% if method == 'totp' %}
+                            Enter the 6-digit code from your authenticator app
+                        {% elif method == 'backup' %}
+                            Enter your backup code (format: XXXX-XXXX)
+                        {% else %}
+                            Enter the verification code
+                        {% endif %}
+                    </p>
+                </div>
+
+                <button type="submit" class="cyber-button px-6 py-3 rounded-lg text-lg font-bold w-full">
+                    VERIFY & LOGIN
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <a href="{% url 'users:login' %}" class="text-slate-400 hover:text-cyber-lime text-sm">
+                    ← Back to Login
+                </a>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-slate-700">
+                <p class="text-slate-500 text-xs text-center font-mono">
+                    Having trouble? Contact support or use a backup code if available.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

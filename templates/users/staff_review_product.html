@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review Product - Staff Dashboard{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="{% url 'users:staff-pending-products' %}" class="text-slate-400 hover:text-cyber-lime font-mono flex items-center gap-2 mb-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Pending Products
+            </a>
+            <h1 class="text-4xl font-bold text-cyber-lime mb-2 font-mono">REVIEW PRODUCT</h1>
+            <p class="text-slate-400 font-mono">Approve, reject, or request changes for this listing</p>
+        </div>
+
+        {% if is_military %}
+        <div class="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30">
+            <div class="flex items-start gap-3">
+                <svg class="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <div>
+                    <p class="text-red-400 font-bold font-mono text-sm">MILITARY-GRADE PRODUCT</p>
+                    <p class="text-slate-400 text-sm mt-1">This product is classified as military-grade. Extra verification is required before approval.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Product Details -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <div class="flex items-start gap-6">
+                <!-- Product Image -->
+                <div class="w-48 h-48 rounded-lg bg-slate-700 flex-shrink-0 overflow-hidden">
+                    {% if product.productimage_set.first %}
+                    <img src="{{ product.productimage_set.first.image.url }}" alt="{{ product.title }}" class="w-full h-full object-cover">
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center">
+                        <svg class="w-12 h-12 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Product Info -->
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-white font-mono mb-2">{{ product.title }}</h2>
+                    <p class="text-cyber-lime text-2xl font-bold font-mono mb-4">${{ product.price|floatformat:2 }}</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-slate-500 font-mono">Category</p>
+                            <p class="text-white">{{ product.category|default:"Uncategorized" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 font-mono">Seller</p>
+                            <p class="text-white">{{ product.seller.username }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 font-mono">Stock</p>
+                            <p class="text-white">{{ product.stock_quantity }} units</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 font-mono">Submitted</p>
+                            <p class="text-white">{{ product.created_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Description -->
+            <div class="mt-6 pt-6 border-t border-slate-700/50">
+                <h3 class="text-lg font-bold text-cyber-lime font-mono mb-2">DESCRIPTION</h3>
+                <p class="text-slate-400">{{ product.description }}</p>
+            </div>
+        </div>
+
+        {% if robot %}
+        <!-- Robot Specifications -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-bold text-cyber-lime font-mono mb-4">ROBOT SPECIFICATIONS</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <p class="text-slate-500 font-mono text-xs">TYPE</p>
+                    <p class="text-white text-sm">{{ robot.get_robot_type_display }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 font-mono text-xs">MANUFACTURER</p>
+                    <p class="text-white text-sm">{{ robot.manufacturer }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 font-mono text-xs">MODEL</p>
+                    <p class="text-white text-sm">{{ robot.model_number|default:"N/A" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 font-mono text-xs">WEIGHT</p>
+                    <p class="text-white text-sm">{{ robot.weight_kg|default:"N/A" }} kg</p>
+                </div>
+            </div>
+            
+            <!-- Access Control Settings -->
+            <div class="mt-6 pt-6 border-t border-slate-700/50">
+                <h4 class="text-white font-mono mb-3">ACCESS CONTROL</h4>
+                <div class="flex flex-wrap gap-2">
+                    {% if robot.is_restricted %}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30">RESTRICTED</span>
+                    {% endif %}
+                    {% if robot.is_companion %}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-pink-500/20 text-pink-400 border border-pink-500/30">18+ COMPANION</span>
+                    {% endif %}
+                    {% if robot.requires_verification %}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30">VERIFICATION REQUIRED</span>
+                    {% endif %}
+                    {% if robot.required_license != 'none' %}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">{{ robot.get_required_license_display|upper }}</span>
+                    {% endif %}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-slate-500/20 text-slate-400 border border-slate-500/30">CLEARANCE: {{ robot.required_clearance_priority }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Review Actions -->
+        <div class="glass-effect cyber-border rounded-lg p-6">
+            <h3 class="text-lg font-bold text-cyber-lime font-mono mb-4">REVIEW ACTIONS</h3>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-6">
+                    <label class="block text-slate-300 font-mono text-sm mb-2">Notes (optional)</label>
+                    <textarea name="notes" rows="3" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white font-mono focus:border-cyber-lime focus:ring-1 focus:ring-cyber-lime" placeholder="Add notes for the seller..."></textarea>
+                </div>
+                
+                <div class="flex flex-wrap gap-4">
+                    <button type="submit" name="action" value="approve" class="flex-1 px-6 py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition-all font-mono flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        APPROVE
+                    </button>
+                    
+                    <button type="submit" name="action" value="request_changes" class="flex-1 px-6 py-3 bg-yellow-500 text-deep-slate font-bold rounded-lg hover:bg-yellow-600 transition-all font-mono flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        REQUEST CHANGES
+                    </button>
+                    
+                    <button type="submit" name="action" value="reject" class="flex-1 px-6 py-3 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition-all font-mono flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        REJECT
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

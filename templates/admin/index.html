@@ -1,0 +1,194 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* ARES Admin Notification Badges */
+    .admin-notification-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: white;
+        background: #dc3545;
+        border-radius: 10px;
+        margin-left: 8px;
+        animation: pulse-badge 2s infinite;
+    }
+    
+    .admin-notification-badge.warning {
+        background: #ffc107;
+        color: #212529;
+    }
+    
+    .admin-notification-badge.info {
+        background: #0dcaf0;
+        color: #212529;
+    }
+    
+    @keyframes pulse-badge {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    
+    /* ARES Admin Dashboard Cards */
+    .ares-admin-dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .ares-admin-card {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .ares-admin-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        text-decoration: none;
+    }
+    
+    .ares-admin-card .count {
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1;
+    }
+    
+    .ares-admin-card .label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        margin-top: 8px;
+        text-align: center;
+    }
+    
+    .ares-admin-card.danger .count { color: #dc3545; }
+    .ares-admin-card.warning .count { color: #ffc107; }
+    .ares-admin-card.info .count { color: #0dcaf0; }
+    .ares-admin-card.success .count { color: #198754; }
+    
+    /* Enhanced sidebar links */
+    #nav-sidebar .module th a,
+    #nav-sidebar .module caption a {
+        position: relative;
+    }
+    
+    /* Header notification area */
+    .ares-header-notifications {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-left: auto;
+        padding-right: 16px;
+    }
+    
+    .ares-header-notifications a {
+        display: flex;
+        align-items: center;
+        color: #fff;
+        text-decoration: none;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        background: rgba(255,255,255,0.1);
+        transition: background 0.2s;
+    }
+    
+    .ares-header-notifications a:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    
+    .ares-header-notifications .badge {
+        background: #dc3545;
+        color: white;
+        border-radius: 10px;
+        padding: 2px 6px;
+        font-size: 10px;
+        font-weight: 700;
+        margin-left: 6px;
+    }
+    
+    /* ARES Branding */
+    #header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+    }
+    
+    #branding h1 {
+        color: #a3e635 !important;
+    }
+    
+    #branding h1 a:link, #branding h1 a:visited {
+        color: #a3e635 !important;
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">🤖 ARES Administration</a>
+</h1>
+{% if admin_has_pending %}
+<div class="ares-header-notifications">
+    {% if admin_pending_verifications > 0 %}
+    <a href="{% url 'admin:verification_verificationrequest_changelist' %}?status__exact=pending">
+        📋 Verifications <span class="badge">{{ admin_pending_verifications }}</span>
+    </a>
+    {% endif %}
+    {% if admin_pending_licenses > 0 %}
+    <a href="{% url 'admin:verification_exportlicense_changelist' %}?status__exact=pending">
+        📜 Licenses <span class="badge">{{ admin_pending_licenses }}</span>
+    </a>
+    {% endif %}
+    {% if admin_pending_orders > 0 %}
+    <a href="{% url 'admin:orders_purchaserequest_changelist' %}?status__exact=pending">
+        🛒 Orders <span class="badge">{{ admin_pending_orders }}</span>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if admin_has_pending %}
+<div class="ares-admin-dashboard">
+    <a href="{% url 'admin:verification_verificationrequest_changelist' %}?status__exact=pending" class="ares-admin-card {% if admin_pending_verifications > 0 %}danger{% else %}success{% endif %}">
+        <span class="count">{{ admin_pending_verifications }}</span>
+        <span class="label">Pending Verifications</span>
+    </a>
+    <a href="{% url 'admin:verification_exportlicense_changelist' %}?status__exact=pending" class="ares-admin-card {% if admin_pending_licenses > 0 %}danger{% else %}success{% endif %}">
+        <span class="count">{{ admin_pending_licenses }}</span>
+        <span class="label">Pending Licenses</span>
+    </a>
+    <a href="{% url 'admin:orders_purchaserequest_changelist' %}?status__exact=pending" class="ares-admin-card {% if admin_pending_orders > 0 %}warning{% else %}success{% endif %}">
+        <span class="count">{{ admin_pending_orders }}</span>
+        <span class="label">Pending Orders</span>
+    </a>
+    {% if admin_pending_tickets > 0 %}
+    <a href="{% url 'admin:support_ticket_changelist' %}?status__exact=open" class="ares-admin-card info">
+        <span class="count">{{ admin_pending_tickets }}</span>
+        <span class="label">Open Tickets</span>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+{{ block.super }}
+{% endblock %}

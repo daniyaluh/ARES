@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Withdraw Verification Request - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-effect cyber-border rounded-lg p-8">
+            <h1 class="text-4xl font-bold text-red-400 mb-4">WITHDRAW VERIFICATION REQUEST</h1>
+            
+            <div class="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6">
+                <p class="text-red-300 font-mono text-sm">
+                    ⚠️ Are you sure you want to withdraw this verification request?
+                </p>
+                <p class="text-slate-400 text-sm mt-2">
+                    This action cannot be undone. You will need to submit a new request if you want verification in the future.
+                </p>
+            </div>
+
+            <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+                <h3 class="text-cyber-lime font-bold mb-2">Request Details</h3>
+                <p class="text-slate-300 mb-2"><strong>Clearance:</strong> {{ verification_request.requested_clearance.name }}</p>
+                <p class="text-slate-300 mb-2"><strong>Status:</strong> {{ verification_request.get_status_display }}</p>
+                <p class="text-slate-300"><strong>Submitted:</strong> {{ verification_request.submitted_at|date:"M d, Y H:i" }}</p>
+            </div>
+
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div class="flex items-center space-x-4">
+                    <button type="submit" 
+                            class="px-6 py-3 bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg hover:bg-red-500/30 transition-colors font-bold">
+                        CONFIRM WITHDRAWAL
+                    </button>
+                    <a href="{% url 'verification:request-detail' verification_request.id %}" 
+                       class="px-6 py-3 cyber-button rounded-lg">
+                        CANCEL
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile Settings - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-linear-bg py-12">
+    <div class="max-w-4xl mx-auto px-6">
+        <div class="card p-8">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h1 class="text-3xl font-semibold text-white mb-2">Profile settings</h1>
+                    <p class="text-linear-text-secondary">Manage your account preferences</p>
+                </div>
+                <a href="{% url 'users:profile' %}" class="btn-secondary px-4 py-2 text-sm">
+                    Back to profile
+                </a>
+            </div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-6 p-4 rounded-lg {% if message.tags == 'error' %}bg-linear-red/10 border border-linear-red/30 text-linear-red{% elif message.tags == 'success' %}bg-linear-green/10 border border-linear-green/30 text-linear-green{% else %}bg-linear-blue/10 border border-linear-blue/30 text-linear-blue{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post" class="space-y-8">
+                {% csrf_token %}
+                
+                <!-- Location & Localization Settings -->
+                <div class="border-b border-linear-border pb-8 mb-8">
+                    <h2 class="text-xl font-semibold text-white mb-6">Location & language</h2>
+                    
+                    <!-- Detected Location (Read-Only) -->
+                    <div class="mb-6 p-4 bg-linear-surface-2 border border-linear-border rounded-lg">
+                        <div class="flex items-center gap-2 mb-4">
+                            <svg class="w-5 h-5 text-linear-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-white">Detected location</span>
+                            <span class="text-xs text-linear-text-tertiary">(Auto-detected from IP)</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="p-3 rounded-lg border border-linear-border bg-linear-surface">
+                                <p class="text-xs text-linear-text-tertiary mb-1.5">Country</p>
+                                <p class="text-sm font-medium text-white">
+                                    {{ profile.detected_country|default:location_info.country }}
+                                </p>
+                            </div>
+                            <div class="p-3 rounded-lg border border-linear-border bg-linear-surface">
+                                <p class="text-xs text-linear-text-tertiary mb-1.5">City</p>
+                                <p class="text-sm font-medium text-white">
+                                    {{ profile.detected_city|default:location_info.city }}
+                                </p>
+                            </div>
+                            <div class="p-3 rounded-lg border border-linear-border bg-linear-surface">
+                                <p class="text-xs text-linear-text-tertiary mb-1.5">Timezone</p>
+                                <p class="text-sm font-medium text-white">
+                                    {{ profile.timezone }}
+                                </p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-linear-text-tertiary mt-4">
+                            This information is automatically detected from your IP address: {{ ip_address }}
+                        </p>
+                    </div>
+                    
+                    <!-- Language Preference -->
+                    <div class="mb-6 p-3 bg-linear-yellow/10 border border-linear-yellow/30 rounded-lg">
+                        <p class="text-sm text-linear-yellow">
+                            <strong>Note:</strong> Language translations are not yet available. Your preference will be saved for future use.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Preferred Language</label>
+                        <select name="preferred_language" class="w-full">
+                            {% for code, name in languages %}
+                                <option value="{{ code }}" {% if profile.preferred_language == code %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Professional Information -->
+                <div class="border-b border-linear-border pb-8 mb-8">
+                    <h2 class="text-xl font-semibold text-white mb-6">Professional information</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Company Name</label>
+                            <input type="text" name="company_name" value="{{ profile.company_name }}" 
+                                   class="w-full"
+                                   placeholder="Your company">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Job Title</label>
+                            <input type="text" name="job_title" value="{{ profile.job_title }}" 
+                                   class="w-full"
+                                   placeholder="Your role">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Industry</label>
+                            <input type="text" name="industry" value="{{ profile.industry }}" 
+                                   class="w-full"
+                                   placeholder="e.g., Defense, Research, Manufacturing">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-linear-text-secondary mb-1.5">Website</label>
+                            <input type="url" name="website" value="{{ profile.website }}" 
+                                   class="w-full"
+                                   placeholder="https://yourwebsite.com">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account Info (Read Only) -->
+                <div class="border-b border-linear-border pb-8 mb-8">
+                    <h2 class="text-xl font-semibold text-white mb-6">Account information</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 rounded-lg border border-linear-border bg-linear-surface">
+                            <p class="text-xs text-linear-text-tertiary mb-1.5">Email</p>
+                            <p class="text-sm font-medium text-white">{{ request.user.email }}</p>
+                            {% if profile.email_verified %}
+                                <span class="text-xs text-linear-green mt-1.5 inline-flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Verified
+                                </span>
+                            {% else %}
+                                <span class="text-xs text-linear-yellow mt-1.5 inline-flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Not verified
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="p-4 rounded-lg border border-linear-border bg-linear-surface">
+                            <p class="text-xs text-linear-text-tertiary mb-1.5">Username</p>
+                            <p class="text-sm font-medium text-white">{{ request.user.username }}</p>
+                        </div>
+                        <div class="p-4 rounded-lg border border-linear-border bg-linear-surface">
+                            <p class="text-xs text-linear-text-tertiary mb-1.5">Member since</p>
+                            <p class="text-sm font-medium text-white">{{ request.user.date_joined|date:"M d, Y" }}</p>
+                        </div>
+                        <div class="p-4 rounded-lg border border-linear-border bg-linear-surface">
+                            <p class="text-xs text-linear-text-tertiary mb-1.5">Last profile update</p>
+                            <p class="text-sm font-medium text-white">
+                                {% if profile.last_profile_update %}
+                                    {{ profile.last_profile_update|date:"M d, Y H:i" }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="flex justify-end gap-3 pt-6 border-t border-linear-border">
+                    <a href="{% url 'users:profile' %}" class="btn-secondary px-6 py-2.5 text-sm">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-primary px-6 py-2.5 text-sm">
+                        Save changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+

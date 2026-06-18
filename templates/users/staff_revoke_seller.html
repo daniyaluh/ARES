@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Revoke Seller - {{ seller.username }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="{% url 'users:staff-all-sellers' %}" class="text-slate-400 hover:text-cyber-lime font-mono flex items-center gap-2 mb-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to All Sellers
+            </a>
+            <h1 class="text-3xl font-bold text-red-400 font-mono">REVOKE SELLER STATUS</h1>
+            <p class="text-slate-400 font-mono mt-2">This action will remove seller privileges</p>
+        </div>
+
+        <!-- Warning -->
+        <div class="glass-effect border-2 border-red-500/50 rounded-lg p-6 mb-6">
+            <div class="flex items-start gap-4">
+                <div class="text-4xl">⚠️</div>
+                <div>
+                    <h2 class="text-xl font-bold text-red-400 mb-2">Confirm Revocation</h2>
+                    <p class="text-slate-300">
+                        You are about to revoke seller privileges from <strong class="text-white">{{ seller.username }}</strong>.
+                        This action will:
+                    </p>
+                    <ul class="mt-4 space-y-2 text-slate-400">
+                        <li class="flex items-center gap-2">
+                            <span class="text-red-400">✗</span>
+                            <span>Convert their account to a regular buyer</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-red-400">✗</span>
+                            <span>Remove access to seller dashboard</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-red-400">✗</span>
+                            <span>Prevent them from listing new products</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-yellow-400">!</span>
+                            <span>Existing products will remain but may become inactive</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seller Info -->
+        <div class="glass-effect cyber-border rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-bold text-cyber-lime mb-4">SELLER INFORMATION</h3>
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-20 h-20 rounded-full bg-slate-700 flex items-center justify-center">
+                    {% if seller.avatar %}
+                    <img src="{{ seller.avatar.url }}" alt="{{ seller.username }}" class="w-20 h-20 rounded-full object-cover">
+                    {% else %}
+                    <span class="text-3xl font-bold text-cyber-lime">{{ seller.username|first|upper }}</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold text-white">{{ seller.username }}</h4>
+                    <p class="text-slate-400">{{ seller.email }}</p>
+                    <span class="px-2 py-1 text-xs bg-green-500/20 text-green-400 rounded font-mono mt-2 inline-block">APPROVED SELLER</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">JOINED</p>
+                    <p class="text-slate-200">{{ seller.date_joined|date:"M d, Y" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">TOTAL SALES</p>
+                    <p class="text-slate-200">{{ seller.total_sales }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">SELLER RATING</p>
+                    <p class="text-slate-200">{{ seller.seller_rating|floatformat:1 }} / 5.0</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs font-mono">ACCOUNT ID</p>
+                    <p class="text-slate-200 font-mono text-xs">{{ seller.id }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revoke Form -->
+        <div class="glass-effect cyber-border rounded-lg p-6">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-6">
+                    <label for="reason" class="block text-slate-300 font-mono text-sm mb-2">REASON FOR REVOCATION (Optional)</label>
+                    <textarea name="reason" id="reason" rows="4"
+                              class="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-lg text-slate-200 focus:border-red-400 focus:ring-1 focus:ring-red-400 focus:outline-none"
+                              placeholder="Provide a reason for revoking seller status..."></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-4">
+                    <a href="{% url 'users:staff-all-sellers' %}" class="px-6 py-3 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 font-mono">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-mono font-bold">
+                        ⛔ Revoke Seller Status
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

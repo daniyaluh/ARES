@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Export Licenses - ARES{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-deep-slate via-slate-850 to-deep-slate py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-cyber-lime font-mono mb-2">EXPORT LICENSES</h1>
+                    <p class="text-slate-400">Manage your export licenses for controlled products</p>
+                </div>
+                <a href="{% url 'verification:license-apply' %}" class="cyber-button px-6 py-3 rounded-lg font-bold flex items-center gap-2">
+                    <span>+</span> APPLY FOR LICENSE
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="glass-effect cyber-border rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm font-mono">VALID LICENSES</p>
+                        <p class="text-3xl font-bold text-cyber-lime">{{ valid_licenses|length }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-cyber-lime/20 rounded-lg flex items-center justify-center">
+                        <span class="text-cyber-lime text-xl">✓</span>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-effect border border-yellow-500/30 rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm font-mono">PENDING REVIEW</p>
+                        <p class="text-3xl font-bold text-yellow-400">{{ pending_count }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                        <span class="text-yellow-400 text-xl">⏳</span>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-effect border border-blue-500/30 rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm font-mono">TOTAL APPROVED</p>
+                        <p class="text-3xl font-bold text-blue-400">{{ approved_count }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                        <span class="text-blue-400 text-xl">📋</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Licenses List -->
+        {% if licenses %}
+        <div class="space-y-4">
+            {% for license in licenses %}
+            <div class="glass-effect border {% if license.is_valid %}border-cyber-lime/30{% elif license.status == 'pending' or license.status == 'under_review' %}border-yellow-500/30{% elif license.status == 'rejected' or license.status == 'revoked' %}border-red-500/30{% else %}border-slate-700{% endif %} rounded-lg p-6 hover:border-opacity-50 transition-all">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            {% if license.license_number %}
+                            <h3 class="text-lg font-bold text-cyber-lime font-mono">{{ license.license_number }}</h3>
+                            {% else %}
+                            <h3 class="text-lg font-bold text-slate-400 font-mono">Application #{{ license.id|slice:":8" }}...</h3>
+                            {% endif %}
+                            
+                            <!-- Status Badge -->
+                            <span class="px-2 py-1 text-xs rounded font-mono
+                                {% if license.status == 'approved' %}bg-green-500/20 text-green-400
+                                {% elif license.status == 'pending' %}bg-yellow-500/20 text-yellow-400
+                                {% elif license.status == 'under_review' %}bg-blue-500/20 text-blue-400
+                                {% elif license.status == 'additional_info_required' %}bg-orange-500/20 text-orange-400
+                                {% elif license.status == 'rejected' %}bg-red-500/20 text-red-400
+                                {% elif license.status == 'suspended' %}bg-orange-500/20 text-orange-400
+                                {% elif license.status == 'revoked' %}bg-red-500/20 text-red-400
+                                {% elif license.status == 'expired' %}bg-slate-500/20 text-slate-400
+                                {% else %}bg-slate-500/20 text-slate-400{% endif %}">
+                                {{ license.get_status_display|upper }}
+                            </span>
+                            
+                            {% if license.is_valid %}
+                            <span class="px-2 py-1 text-xs bg-cyber-lime/20 text-cyber-lime rounded font-mono">
+                                ✓ ACTIVE
+                            </span>
+                            {% elif license.is_expired %}
+                            <span class="px-2 py-1 text-xs bg-red-500/20 text-red-400 rounded font-mono">
+                                EXPIRED
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="text-slate-300 text-sm mb-2">
+                            {{ license.get_license_type_display }}
+                            {% if license.company_name %} • {{ license.company_name }}{% endif %}
+                            {% if license.country %} • {{ license.country }}{% endif %}
+                        </p>
+                        
+                        <div class="flex items-center gap-4 text-xs text-slate-500 font-mono">
+                            {% if license.submitted_at %}
+                            <span>Submitted: {{ license.submitted_at|date:"M d, Y" }}</span>
+                            {% endif %}
+                            {% if license.valid_until %}
+                            <span>Valid until: {{ license.valid_until|date:"M d, Y" }}</span>
+                            {% endif %}
+                            {% if license.days_until_expiry is not None and license.days_until_expiry > 0 %}
+                            <span class="{% if license.days_until_expiry <= 30 %}text-yellow-400{% else %}text-slate-400{% endif %}">
+                                {{ license.days_until_expiry }} days remaining
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <a href="{% url 'verification:license-detail' license_id=license.id %}" 
+                           class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-sm font-mono transition-colors">
+                            VIEW DETAILS
+                        </a>
+                        {% if license.status == 'draft' %}
+                        <a href="{% url 'verification:license-edit' license_id=license.id %}" 
+                           class="px-4 py-2 bg-cyber-lime/20 hover:bg-cyber-lime/30 text-cyber-lime rounded-lg text-sm font-mono transition-colors">
+                            CONTINUE
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if license.status == 'additional_info_required' and license.additional_info_request %}
+                <div class="mt-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                    <p class="text-orange-400 text-sm font-mono mb-1">⚠️ ADDITIONAL INFORMATION REQUIRED:</p>
+                    <p class="text-slate-300 text-sm">{{ license.additional_info_request }}</p>
+                    <a href="{% url 'verification:license-edit' license_id=license.id %}" 
+                       class="inline-block mt-2 text-orange-400 hover:text-orange-300 text-sm font-mono">
+                        Update Application →
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if license.status == 'rejected' and license.rejection_reason %}
+                <div class="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                    <p class="text-red-400 text-sm font-mono mb-1">✗ REJECTION REASON:</p>
+                    <p class="text-slate-300 text-sm">{{ license.rejection_reason }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass-effect cyber-border rounded-lg p-12 text-center">
+            <div class="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-3xl">📋</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-300 mb-2">No Export Licenses</h3>
+            <p class="text-slate-400 mb-6">You haven't applied for any export licenses yet.</p>
+            <a href="{% url 'verification:license-apply' %}" class="cyber-button px-6 py-3 rounded-lg font-bold inline-block">
+                APPLY FOR YOUR FIRST LICENSE
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Info Section -->
+        <div class="mt-8 glass-effect border border-slate-700 rounded-lg p-6">
+            <h3 class="text-lg font-bold text-slate-300 mb-4">📋 About Export Licenses</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-400">
+                <div>
+                    <h4 class="text-cyber-lime font-mono mb-2">When is an Export License Required?</h4>
+                    <ul class="space-y-1">
+                        <li>• Military-grade autonomous systems</li>
+                        <li>• Defense and security robotics</li>
+                        <li>• Export-controlled technology</li>
+                        <li>• Products with international shipping restrictions</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-cyber-lime font-mono mb-2">License Types Available</h4>
+                    <ul class="space-y-1">
+                        <li>• <strong>Individual</strong> - Personal use</li>
+                        <li>• <strong>Commercial</strong> - Business purchases</li>
+                        <li>• <strong>Government</strong> - Government entities</li>
+                        <li>• <strong>Defense Contractor</strong> - Military contractors</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
